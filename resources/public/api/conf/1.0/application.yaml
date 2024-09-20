@@ -1,16 +1,156 @@
 openapi: "3.0.3"
 
 info:
-  version: 1.0.0
-  title: Hello World
-
+  title: Phone
+  contact:
+    name: CIP Insights & Reputation Team
+    email: cip-insights-and-reputation-g@digital.hmrc.gov.uk
+  version: '1.0'
+  description: >
+    # Overview
+    ### Phone number verification
+    This API enables your application to validate and verify a given phone number
 servers:
-  - url: https://test-api.service.hmrc.gov.uk/hello-world
+  - url: https://test-api.service.hmrc.gov.uk/misc/phone-number
     description: Sandbox
-  - url: https://api.service.hmrc.gov.uk/hello-world
+  - url: https://api.service.hmrc.gov.uk/misc/phone-number
     description: Production
 
+paths:
+ /store:
+  post:
+    summary: Address risk
+    description: >
+      Store the given address for short term
+    operationId: AddressCache
+    security:
+      - applicationRestricted: [ ]
+    parameters: []
+    requestBody:
+      description: ''
+      content:
+        application/json:
+          schema:
+            $ref: 'docs/risk-insights-request.json'
+          example:
+            address:
+              line1: "1 High Street"
+              postcode: "EC1 2FG"
+              country: "United Kingdom"
+      required: true
+    responses:
+      '204':
+        description: ''
+        headers: { }
+    deprecated: false
+  /risk:
+    post:
+      summary: Address risk
+      description: >
+        Check if the provided address is valid
+      operationId: AddressRisk
+      security:
+        - applicationRestricted: [ ]
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: 'docs/risk-insights-request.json'
+            example:
+              address:
+                line1: "1 High Street"
+                postcode: "EC1 2FG"
+                country: "United Kingdom"
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: { }
+          content:
+            application/json:
+              schema:
+                $ref: 'docs/risk-response.json'
+              example:
+                correlationId: "c33b596c-2cdd-4bf7-a20c-8efd1b32802f"
+                address:
+                  line1: "1 High Street"
+                  postcode: "EC1 2FG"
+                  country: "United Kingdom"
+                insights:
+                  risk:
+                    riskScore: 0
+                    reason: "ADDRESS_NOT_ON_WATCH_LIST"
+      deprecated: false
+  /insights:
+    post:
+      summary: Address insights
+      description: >
+        Check if the provided address is valid
+      operationId: AddressInsights
+      security:
+        - applicationRestricted: [ ]
+      parameters: [ ]
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: 'docs/risk-insights-request.json'
+            example:
+              address:
+                line1: "1 High Street"
+                postcode: "EC1 2FG"
+                country: "United Kingdom"
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: { }
+          content:
+            application/json:
+              schema:
+                $ref: 'docs/insights-response.json'
+              example:
+                correlationId: "c33b596c-2cdd-4bf7-a20c-8efd1b32802f"
+                address:
+                  line1: "1 High Street"
+                  postcode: "EC1 2FG"
+                  country: "United Kingdom"
+                insights:
+                  risk:
+                    riskScore: 0
+                    reason: "ADDRESS_NOT_ON_WATCH_LIST"
+                  relationships:
+                    occurrences:
+                      - event_type: "SARegistration"
+                        involvement_group: "sa-reg"
+                        involvement_index: 1
+                        request_id: "some-request-uuid"
+                        session_id: "some-session-uuid"
+                        user_id: "joe-bloggs"
+                        event_time: "2024-09-17T05:07:23.123"
+                      - event_type: "SARegistration"
+                        involvement_group: "sa-reg"
+                        involvement_index: 2
+                        request_id: "some-other-request-uuid"
+                        session_id: "some-other-session-uuid"
+                        user_id: "joe-bloggs"
+                        event_time: "2024-09-17T05:07:29.321"
+
+      deprecated: false
 components:
+  securitySchemes:
+    applicationRestricted:
+      type: oauth2
+      description: |
+        HMRC supports OAuth 2.0 for authenticating application restricted API requests using an OAuth 2.0 Bearer Token in the AUTHORIZATION header.
+        See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/application-restricted-endpoints for details.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+          scopes: { }
   parameters:
     acceptHeader:
       name: Accept
@@ -22,28 +162,3 @@ components:
           "application/vnd.hmrc.1.0+xml"
         ]
       required: true
-
-paths:
-  /hello-world:
-    get:
-      summary: Placeholder hello world endpoint
-      description: |
-        An endpoint that returns "Hello world"
-      tags:
-        - phone-number-gateway
-      parameters:
-        - $ref: '#/components/parameters/acceptHeader'
-      responses:
-        200:
-          description: "OK Response"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                "Hello world"
-      security:
-        - {}
