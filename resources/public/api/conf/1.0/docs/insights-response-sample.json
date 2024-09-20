@@ -1,0 +1,27 @@
+{
+  "correlationId": "c33b596c-2cdd-4bf7-a20c-8efd1b32802f",
+  "address": {
+    "line1": "1 High Street",
+    "postcode": "EC1 2FG",
+    "country": "United Kingdom"
+  },
+  "insights": {
+    "risk": {
+      "riskScore": 0,
+      "reason": "ADDRESS_NOT_ON_WATCH_LIST"
+    },
+    "relationships": {
+      "occurrences": [
+        {
+          "event_type": "SARegistration",
+          "involvement_group": "sa-reg",
+          "involvement_index": "1",
+          "request_id": "some-request-uuid",
+          "session_id": "some-session-uuid",
+          "user_id": "joe-bloggs",
+          "event_time": "2024-09-17T05:07:23.123"
+        }
+      ]
+    }
+  }
+}
