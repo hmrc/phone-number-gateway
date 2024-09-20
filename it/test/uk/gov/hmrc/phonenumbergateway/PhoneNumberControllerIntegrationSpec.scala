@@ -49,73 +49,146 @@ class PhoneNumberControllerIntegrationSpec
       )
       .build()
 
-  "PhoneNumberController" should {
-    "respond with OK status" when {
-      "valid json payload is provided" in {
-        externalWireMockServer.stubFor(
-          post(urlEqualTo(s"/verify"))
-            .withRequestBody(equalToJson("""{"phoneNumber": "12123123456"}"""))
-            .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MimeTypes.JSON))
-            .willReturn(
-              aResponse()
-                .withBody(
-                  """{"phoneNumber": "12123123456"}"""
-                )
-                .withStatus(OK)
-            )
-        )
-        val response =
-          wsClient
-            .url(s"$baseUrl/verify")
-            .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"phoneNumber": "12123123456"}""")
-            .futureValue
+// Phone number tests
+"PhoneNumberController" should {
+  "respond with OK status" when {
+    "valid json payload is provided" in {
+      externalWireMockServer.stubFor(
+        post(urlEqualTo(s"/verify"))
+          .withRequestBody(equalToJson("""{"phoneNumber": "12123123456"}"""))
+          .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(
+            aResponse()
+              .withBody(
+                """{"phoneNumber": "12123123456"}"""
+              )
+              .withStatus(OK)
+          )
+      )
+      val response =
+        wsClient
+          .url(s"$baseUrl/verify")
+          .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+          .post("""{"phoneNumber": "12123123456"}""")
+          .futureValue
 
-        response.status shouldBe OK
-        response.json shouldBe Json.parse(
-          """{"phoneNumber": "12123123456"}"""
-        )
-      }
-    }
-
-    "respond with BAD_REQUEST status" when {
-      "invalid json payload is provided" in {
-        externalWireMockServer.stubFor(
-          post(urlEqualTo(s"/verify"))
-            .withRequestBody(equalToJson("""{"no-phoneNumber": "12123123456"}"""))
-            .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MediaTypes.`application/json`.value))
-            .willReturn(
-              aResponse()
-                .withBody(
-                  """{"statusCode":400,"message":"bad request, cause: invalid json"}"""
-                )
-                .withStatus(BAD_REQUEST)
-            )
-        )
-        val response =
-          wsClient
-            .url(s"$baseUrl/verify")
-            .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"no-phoneNumber": "12123123456"}""")
-            .futureValue
-
-        response.status shouldBe BAD_REQUEST
-        response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
-      }
-    }
-
-    "respond with BAD_REQUEST status" when {
-      "malformed json payload is provided" in {
-        val response =
-          wsClient
-            .url(s"$baseUrl/verify")
-            .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"phoneNumber"12123123456"}""")
-            .futureValue
-
-        response.status shouldBe BAD_REQUEST
-        response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
-      }
+      response.status shouldBe OK
+      response.json shouldBe Json.parse(
+        """{"phoneNumber": "12123123456"}"""
+      )
     }
   }
+
+  "respond with BAD_REQUEST status" when {
+    "invalid json payload is provided" in {
+      externalWireMockServer.stubFor(
+        post(urlEqualTo(s"/verify"))
+          .withRequestBody(equalToJson("""{"no-phoneNumber": "12123123456"}"""))
+          .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MediaTypes.`application/json`.value))
+          .willReturn(
+            aResponse()
+              .withBody(
+                """{"statusCode":400,"message":"bad request, cause: invalid json"}"""
+              )
+              .withStatus(BAD_REQUEST)
+          )
+      )
+      val response =
+        wsClient
+          .url(s"$baseUrl/verify")
+          .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+          .post("""{"no-phoneNumber": "12123123456"}""")
+          .futureValue
+
+      response.status shouldBe BAD_REQUEST
+      response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+    }
+  }
+
+  "respond with BAD_REQUEST status" when {
+    "malformed json payload is provided" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/verify")
+          .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+          .post("""{"phoneNumber"12123123456"}""")
+          .futureValue
+
+      response.status shouldBe BAD_REQUEST
+      response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+    }
+  }
+}
+
+// Passcode tests
+"PhoneNumberController" should {
+  "respond with OK status for Passcode" when {
+    "valid json payload is provided" in {
+      externalWireMockServer.stubFor(
+        post(urlEqualTo(s"/verify/passcode"))
+          .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "passcode": "ABCGED"}"""))
+          .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .willReturn(
+            aResponse()
+              .withBody(
+                """{"phoneNumber": "12123123456",  "passcode": "ABCGED"}"""
+              )
+              .withStatus(OK)
+          )
+      )
+      val response =
+        wsClient
+          .url(s"$baseUrl/verify/passcode")
+          .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+          .post("""{"phoneNumber": "12123123456",  "passcode": "ABCGED"}""")
+          .futureValue
+
+      response.status shouldBe OK
+      response.json shouldBe Json.parse(
+        """{"phoneNumber": "12123123456",  "passcode": "ABCGED"}"""
+      )
+    }
+  }
+
+  "respond with BAD_REQUEST status" when {
+    "invalid json payload is provided for Passcode" in {
+      externalWireMockServer.stubFor(
+        post(urlEqualTo(s"/verify/passcode"))
+          .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "no-passcode": "ABCGED"}"""))
+          .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MediaTypes.`application/json`.value))
+          .willReturn(
+            aResponse()
+              .withBody(
+                """{"statusCode":400,"message":"bad request, cause: invalid json"}"""
+              )
+              .withStatus(BAD_REQUEST)
+          )
+      )
+      val response =
+        wsClient
+          .url(s"$baseUrl/verify/passcode")
+          .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+          .post("""{"phoneNumber": "12123123456",  "no-passcode": "ABCGED"}""")
+          .futureValue
+
+      response.status shouldBe BAD_REQUEST
+      response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+    }
+  }
+
+  "respond with BAD_REQUEST status" when {
+    "malformed json payload is provided for Passcode" in {
+      val response =
+        wsClient
+          .url(s"$baseUrl/verify/passcode")
+          .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+          .post("""{"phoneNumber": "12123123456",  "passcode"ABCGED"}""")
+          .futureValue
+
+      response.status shouldBe BAD_REQUEST
+      response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+    }
+  }
+}
+
 }
