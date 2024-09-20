@@ -14,22 +14,6 @@
  * limitations under the License.
  */
 
-/*
- * Copyright 2024 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package uk.gov.hmrc.phonenumbergateway.connector
 
 import org.apache.pekko.stream.Materializer
@@ -51,7 +35,7 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
   val insightsPort = 11222
 
   override lazy val app: Application = new GuiceApplicationBuilder()
-    .configure("microservice.services.address-insights-proxy.port" -> insightsPort)
+    .configure("microservice.services.phone-number-verification.port" -> insightsPort)
     .build()
 
   private val connector = app.injector.instanceOf[DownstreamConnector]
@@ -63,11 +47,11 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
     "return true if the remote service returns a 200" in {
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/insights") =>
+        { case r @ SPOST(p"/verify") =>
           Action(Ok("{}").withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
-        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/insights", "1234"))
+        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe true
       }
     }
@@ -75,11 +59,11 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
     "return true if the remote service returns a 400" in {
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/insights") =>
+        { case r @ SPOST(p"/verify") =>
           Action(BadRequest("{}").withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
-        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/insights", "1234"))
+        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe true
       }
     }
@@ -87,11 +71,11 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
     "return false if the remote service returns a 401" in {
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/check/insights") =>
+        { case r @ SPOST(p"/check/verify") =>
           Action(Unauthorized("{}").withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
-        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/insights", "1234"))
+        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
     }
@@ -99,11 +83,11 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
     "return false if the remote service returns a 404" in {
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/insights") =>
+        { case r @ SPOST(p"/verify") =>
           Action(NotFound)
         }
       } { _ =>
-        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/insights", "1234"))
+        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
     }
@@ -111,11 +95,11 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
     "return false if the remote service returns a 500" in {
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/insights") =>
+        { case r @ SPOST(p"/verify") =>
           Action(InternalServerError)
         }
       } { _ =>
-        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/insights", "1234"))
+        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
     }
@@ -123,11 +107,11 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
     "return false if the remote service returns a 502" in {
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/insights") =>
+        { case r @ SPOST(p"/verify") =>
           Action(BadGateway)
         }
       } { _ =>
-        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/insights", "1234"))
+        val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
     }
