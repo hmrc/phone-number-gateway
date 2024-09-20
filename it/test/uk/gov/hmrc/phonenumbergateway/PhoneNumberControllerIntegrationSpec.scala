@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-????????????????????????????
-
 package uk.gov.hmrc.phonenumbergateway
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, equalToJson, post, urlEqualTo}
@@ -47,7 +45,7 @@ class PhoneNumberControllerIntegrationSpec
     GuiceApplicationBuilder()
       .configure(
         "metrics.enabled" -> false,
-        "microservice.services.address-insights-proxy.port" -> externalWireMockPort
+        "microservice.services.phone-number-verification.port" -> externalWireMockPort
       )
       .build()
 
@@ -55,27 +53,27 @@ class PhoneNumberControllerIntegrationSpec
     "respond with OK status" when {
       "valid json payload is provided" in {
         externalWireMockServer.stubFor(
-          post(urlEqualTo(s"/insights"))
-            .withRequestBody(equalToJson("""{"address":{"line1":"1 High Street", "country":"United Kingdom"}}"""))
+          post(urlEqualTo(s"/verify"))
+            .withRequestBody(equalToJson("""{"phoneNumber": "12123123456"}"""))
             .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MimeTypes.JSON))
             .willReturn(
               aResponse()
                 .withBody(
-                  """{"correlationId":"220967234589763549876", "address":{}, "insights":  {"risk":{ "riskScore": 0, "reason": "ADDRESS_NOT_ON_WATCHLIST"}, "insights": {"occurrences": []}}}"""
+                  """{"phoneNumber": "12123123456"}"""
                 )
                 .withStatus(OK)
             )
         )
         val response =
           wsClient
-            .url(s"$baseUrl/insights")
+            .url(s"$baseUrl/verify")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"address":{"line1":"1 High Street", "country":"United Kingdom"}}""")
+            .post("""{"phoneNumber": "12123123456"}""")
             .futureValue
 
         response.status shouldBe OK
         response.json shouldBe Json.parse(
-          """{"correlationId":"220967234589763549876", "address":{}, "insights":  {"risk":{ "riskScore": 0, "reason": "ADDRESS_NOT_ON_WATCHLIST"}, "insights": {"occurrences": []}}}"""
+          """{"phoneNumber": "12123123456"}"""
         )
       }
     }
@@ -83,22 +81,36 @@ class PhoneNumberControllerIntegrationSpec
     "respond with BAD_REQUEST status" when {
       "invalid json payload is provided" in {
         externalWireMockServer.stubFor(
-          post(urlEqualTo(s"/insights"))
-            .withRequestBody(equalToJson("""{"address":{"line1":"1 High Street", "country":"United Kingdom"}}"""))
+          post(urlEqualTo(s"/verify"))
+            .withRequestBody(equalToJson("""{"no-phoneNumber": "12123123456"}"""))
             .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MediaTypes.`application/json`.value))
             .willReturn(
               aResponse()
                 .withBody(
-                  """{"correlationId":"220967234589763549876", "address":{}, "insights":  {"risk":{ "riskScore": 0, "reason": "ADDRESS_NOT_ON_WATCHLIST"}, "insights": {"occurrences": []}}}"""
+                  """{"statusCode":400,"message":"bad request, cause: invalid json"}"""
                 )
-                .withStatus(OK)
+                .withStatus(BAD_REQUEST)
             )
         )
         val response =
           wsClient
-            .url(s"$baseUrl/insights")
+            .url(s"$baseUrl/verify")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"address":{"line1":"1 High Street", "country":"United Kingdom"}""")
+            .post("""{"no-phoneNumber": "12123123456"}""")
+            .futureValue
+
+        response.status shouldBe BAD_REQUEST
+        response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+      }
+    }
+
+    "respond with BAD_REQUEST status" when {
+      "malformed json payload is provided" in {
+        val response =
+          wsClient
+            .url(s"$baseUrl/verify")
+            .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+            .post("""{"phoneNumber"12123123456"}""")
             .futureValue
 
         response.status shouldBe BAD_REQUEST
