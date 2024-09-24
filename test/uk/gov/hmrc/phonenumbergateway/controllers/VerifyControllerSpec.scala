@@ -31,7 +31,7 @@ import play.api.test.Helpers._
 import play.core.server.{Server, ServerConfig}
 import uk.gov.hmrc.http.HeaderCarrier
 
-class PhoneNumberControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
   val insightsPort = 11222
 
   override lazy val app: Application = new GuiceApplicationBuilder()

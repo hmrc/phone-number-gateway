@@ -30,7 +30,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.test.ExternalWireMockSupport
 
-class PhoneNumberControllerIntegrationSpec
+class VerifyControllerIntegrationSpec
   extends AnyWordSpec
     with Matchers
     with ScalaFutures
