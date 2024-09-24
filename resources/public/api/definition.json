@@ -2,16 +2,22 @@
   "scopes": [
   ],
   "api": {
-    "name": "Hello World",
-    "description": "A 'hello world' example of an API on the HMRC API Developer Hub.",
-    "context": "discuss-with-the-api-platform-team",
-    "categories": ["OTHER"],
+    "name": "Phone Number",
+    "description": "Verification of Phone number - provided by CIP (Customer Insights Platform) Insights and Reputation.",
+    "context": "misc/phone-number",
+    "categories": [
+      "PRIVATE_GOVERNMENT"
+    ],
     "versions": [
       {
         "version": "1.0",
         "status": "ALPHA",
+        "access": {
+          "type": "PRIVATE"
+        },
         "endpointsEnabled": false
       }
     ]
   }
 }
+
