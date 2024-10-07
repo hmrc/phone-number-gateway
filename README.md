@@ -1,7 +1,7 @@
 
 # phone-number-gateway
 
-This is a placeholder README.md for a new repository
+`phone-number-gateway` provides phone number validation and verification services for clients on the api platform
 
 ### License
 
