@@ -19,10 +19,10 @@ servers:
 paths:
  /send-code:
   post:
-    summary: Phone number verification
+    summary: Send a verification code to the phone number provided
     description: >
-      Verify a phone number
-    operationId: PhoneNumberVerification
+      Send a verification code to the phone number provided
+    operationId: PhoneNumberSendVerificationCode
     security:
       - applicationRestricted: [ ]
     parameters: []
@@ -31,7 +31,7 @@ paths:
       content:
         application/json:
           schema:
-            $ref: 'docs/phone-number-verification-request.json'
+            $ref: 'docs/phone-number-send-code-request.json'
           example:
             phoneNumber: "07712123456"
       required: true
@@ -42,17 +42,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: 'docs/phone-number-verification-response.json'
-            examples:
-              status: 'VERIFIED'
+              $ref: 'docs/phone-number-send-code-response.json'
+            example:
+              status: 'CODE_SENT'
               message: 'Phone verification code successfully sent'
     deprecated: false
  /verify-code:
   post:
-    summary: Phone number passcode verification
+    summary: Check that the verification code for the phone number provided is correct
     description: >
-      Verify a phone number passcode
-    operationId: PhoneNumberPasscodeVerification
+      Check that the verification code for the phone number provided is correct
+    operationId: PhoneNumberCheckVerificationCode
     security:
       - applicationRestricted: [ ]
     parameters: []
@@ -61,7 +61,7 @@ paths:
       content:
         application/json:
           schema:
-            $ref: 'docs/phone-number-passcode-verification-request.json'
+            $ref: 'docs/phone-number-verify-code-request.json'
           example:
             phoneNumber: "07712123456"
             passcode: AB12CD
@@ -73,10 +73,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: 'docs/phone-number-passcode-verification-response.json'
+              $ref: 'docs/phone-number-verify-code-response.json'
             example:
-              status: 'PASSCODE_VERIFIED'
-              message: 'Passcode successfully verified'
+              status: 'CODE_VERIFIED'
+              message: 'Verification code successfully verified'
     deprecated: false
 components:
   securitySchemes:

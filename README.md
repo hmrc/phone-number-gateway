@@ -1,5 +1,4 @@
-
-# phone-number-gateway
+phone-number-gateway
 
 `phone-number-gateway` provides phone number validation and verification services for clients on the api platform
 

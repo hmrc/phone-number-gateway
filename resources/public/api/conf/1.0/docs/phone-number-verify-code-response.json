@@ -1,23 +1,24 @@
 {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Phone Number Passcode Verification",
+  "title": "Phone Number Verify Code Response",
   "type": "object",
   "properties": {
-    "phoneNumber": {
+    "status": {
       "type": "string",
       "examples": [
-        "07712123456"
+        "CODE_VERIFIED"
       ]
     },
-    "passcode": {
-      "type": "object",
+    "message": {
+      "type": "string",
       "examples": [
-        "AB12CD"
+        "Verification code successfully verified"
       ]
     }
   },
   "required": [
-    "phoneNumber"
+    "status",
+    "message"
   ]
 }
