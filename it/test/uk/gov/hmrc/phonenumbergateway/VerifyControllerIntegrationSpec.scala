@@ -109,7 +109,7 @@ class VerifyControllerIntegrationSpec
       "malformed json payload is provided" in {
         val response =
           wsClient
-            .url(s"$baseUrl/send-code")
+            .url(s"$baseUrl/phone-number-gateway/send-code")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
             .post("""{"phoneNumber"12123123456"}""")
             .futureValue
@@ -189,5 +189,4 @@ class VerifyControllerIntegrationSpec
       }
     }
   }
-
 }
