@@ -45,16 +45,12 @@ class InvalidJsonErrorHandler @Inject() (
 
   private val logger = Logger(getClass)
 
-  /**
-    * `upstreamWarnStatuses` is used to determine the log level for exceptions
-    * relating to a HttpResponse. You can set this value in your config as
-    * a list of integers representing response codes that should log at a
-    * warning level rather an error level.
+  /** `upstreamWarnStatuses` is used to determine the log level for exceptions relating to a HttpResponse. You can set this value in your config as a list of
+    * integers representing response codes that should log at a warning level rather an error level.
     *
     * e.g. bootstrap.errorHandler.warnOnly.statusCodes=[400,404,502]
     *
-    * This is used to reduce the number of noise the number of duplicated alerts
-    * for a microservice.
+    * This is used to reduce the number of noise the number of duplicated alerts for a microservice.
     */
   protected val upstreamWarnStatuses: Seq[Int] =
     configuration.get[Seq[Int]]("bootstrap.errorHandler.warnOnly.statusCodes")

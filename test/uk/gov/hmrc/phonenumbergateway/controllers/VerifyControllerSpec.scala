@@ -31,7 +31,7 @@ import play.api.test.Helpers._
 import play.core.server.{Server, ServerConfig}
 import uk.gov.hmrc.http.HeaderCarrier
 
-class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite:
   val insightsPort = 11222
 
   override lazy val app: Application = new GuiceApplicationBuilder()
@@ -41,11 +41,10 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
   private val controller = app.injector.instanceOf[VerifyController]
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
-  // Phone number tests
-  "POST /send-code" should {
+  "POST /send-code" should:
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
-    "forward a 200 response from the downstream service" in {
+    "forward a 200 response from the downstream service" in:
       val response = """{"status":"CODE_SENT", "message":"Phone verification code successfully sent"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
@@ -65,9 +64,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         status(result) shouldBe Status.OK
         contentAsString(result) shouldBe response
       }
-    }
 
-    "forward a 400 response from the downstream service" in {
+    "forward a 400 response from the downstream service" in:
       val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: phoneNumber"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
@@ -88,9 +86,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         status(result) shouldBe Status.BAD_REQUEST
         contentAsString(result) shouldBe errorResponse
       }
-    }
 
-    "handle a malformed json payload" in {
+    "handle a malformed json payload" in:
       val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: phoneNumber"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
@@ -107,9 +104,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         status(result) shouldBe Status.BAD_REQUEST
         contentAsString(result) shouldBe errorResponse
       }
-    }
 
-    "return bad gateway if there is no connectivity to the downstream service" in {
+    "return bad gateway if there is no connectivity to the downstream service" in:
       val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
       val fakeRequest = FakeRequest("POST", "/phone-number-gateway/send-code")
@@ -119,14 +115,11 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val result = controller.any()(fakeRequest)
       status(result) shouldBe Status.BAD_GATEWAY
       contentAsString(result) shouldBe errorResponse
-    }
 
-  }
-
-  "POST /verify-code" should {
+  "POST /verify-code" should:
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
-    "forward a 200 response from the downstream service" in {
+    "forward a 200 response from the downstream service" in:
       val response = """{"status":"CODE_VERIFIED", "message":"Phone verification code successfully sent"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
@@ -146,9 +139,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         status(result) shouldBe Status.OK
         contentAsString(result) shouldBe response
       }
-    }
 
-    "forward a 400 response from the downstream service" in {
+    "forward a 400 response from the downstream service" in:
       val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: verificationCode"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
@@ -169,9 +161,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         status(result) shouldBe Status.BAD_REQUEST
         contentAsString(result) shouldBe errorResponse
       }
-    }
 
-    "handle a malformed json payload" in {
+    "handle a malformed json payload" in:
       val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: verificationCode"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
@@ -188,9 +179,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         status(result) shouldBe Status.BAD_REQUEST
         contentAsString(result) shouldBe errorResponse
       }
-    }
 
-    "return bad gateway if there is no connectivity to the downstream service" in {
+    "return bad gateway if there is no connectivity to the downstream service" in:
       val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
       val fakeRequest = FakeRequest("POST", "/phone-number-gateway/verify-code")
@@ -200,7 +190,3 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val result = controller.any()(fakeRequest)
       status(result) shouldBe Status.BAD_GATEWAY
       contentAsString(result) shouldBe errorResponse
-    }
-
-  }
-}

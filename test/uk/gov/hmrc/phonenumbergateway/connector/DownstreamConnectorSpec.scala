@@ -23,28 +23,29 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.Results._
-import play.api.routing.sird.{POST => SPOST, _}
-import play.api.test.Helpers._
+import play.api.mvc.Results.*
+import play.api.routing.sird.{POST as SPOST, *}
+import play.api.test.Helpers.*
 import play.core.server.{Server, ServerConfig}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite:
   val insightsPort = 11222
 
-  override lazy val app: Application = new GuiceApplicationBuilder()
-    .configure("microservice.services.phone-number-verification.port" -> insightsPort)
-    .build()
+  override lazy val app: Application =
+    new GuiceApplicationBuilder()
+      .configure("microservice.services.phone-number-verification.port" -> insightsPort)
+      .build()
 
   private val connector = app.injector.instanceOf[DownstreamConnector]
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
-  "Checking connectivity" should {
+  "Checking connectivity" should:
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
-    "return true if the remote service returns a 200" in {
+    "return true if the remote service returns a 200" in:
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
         { case r @ SPOST(p"/verify") =>
@@ -54,9 +55,8 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
         val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe true
       }
-    }
 
-    "return true if the remote service returns a 400" in {
+    "return true if the remote service returns a 400" in:
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
         { case r @ SPOST(p"/verify") =>
@@ -66,9 +66,8 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
         val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe true
       }
-    }
 
-    "return false if the remote service returns a 401" in {
+    "return false if the remote service returns a 401" in:
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
         { case r @ SPOST(p"/check/verify") =>
@@ -78,9 +77,8 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
         val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
-    }
 
-    "return false if the remote service returns a 404" in {
+    "return false if the remote service returns a 404" in:
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
         { case r @ SPOST(p"/verify") =>
@@ -90,9 +88,8 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
         val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
-    }
 
-    "return false if the remote service returns a 500" in {
+    "return false if the remote service returns a 500" in:
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
         { case r @ SPOST(p"/verify") =>
@@ -102,9 +99,8 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
         val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
-    }
 
-    "return false if the remote service returns a 502" in {
+    "return false if the remote service returns a 502" in:
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
         { case r @ SPOST(p"/verify") =>
@@ -114,6 +110,3 @@ class DownstreamConnectorSpec extends AnyWordSpec with Matchers with GuiceOneApp
         val result = await(connector.checkConnectivity(s"http://localhost:${insightsPort}/verify", "1234"))
         result shouldBe false
       }
-    }
-  }
-}

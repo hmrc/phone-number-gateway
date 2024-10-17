@@ -24,7 +24,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.http.{HeaderNames, MimeTypes}
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
@@ -37,7 +37,7 @@ class VerifyControllerIntegrationSpec
     with ScalaFutures
     with IntegrationPatience
     with GuiceOneServerPerSuite
-    with ExternalWireMockSupport {
+    with ExternalWireMockSupport:
 
   private val wsClient = app.injector.instanceOf[WSClient]
   private val baseUrl = s"http://localhost:$port"
@@ -50,10 +50,9 @@ class VerifyControllerIntegrationSpec
       )
       .build()
 
-// Phone number tests
-  "PhoneNumberController" should {
-    "respond with OK status" when {
-      "valid json payload is provided" in {
+  "PhoneNumberController" should:
+    "respond with OK status" when:
+      "valid json payload is provided" in:
         externalWireMockServer.stubFor(
           post(urlEqualTo(s"/phone-number-verification/send-code"))
             .withRequestBody(equalToJson("""{"phoneNumber": "12123123456"}"""))
@@ -77,11 +76,9 @@ class VerifyControllerIntegrationSpec
         response.json shouldBe Json.parse(
           """{"phoneNumber": "12123123456"}"""
         )
-      }
-    }
 
-    "respond with BAD_REQUEST status" when {
-      "invalid json payload is provided" in {
+    "respond with BAD_REQUEST status" when:
+      "invalid json payload is provided" in:
         externalWireMockServer.stubFor(
           post(urlEqualTo(s"/phone-number-verification/send-code"))
             .withRequestBody(equalToJson("""{"no-phoneNumber": "12123123456"}"""))
@@ -103,11 +100,9 @@ class VerifyControllerIntegrationSpec
 
         response.status shouldBe BAD_REQUEST
         response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
-      }
-    }
 
-    "respond with BAD_REQUEST status" when {
-      "malformed json payload is provided" in {
+    "respond with BAD_REQUEST status" when:
+      "malformed json payload is provided" in:
         val response =
           wsClient
             .url(s"$baseUrl/phone-number-gateway/send-code")
@@ -117,13 +112,10 @@ class VerifyControllerIntegrationSpec
 
         response.status shouldBe BAD_REQUEST
         response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
-      }
-    }
-  }
 
-  "VerifyController" should {
-    "respond with OK status for verificationCode" when {
-      "valid json payload is provided" in {
+  "VerifyController" should:
+    "respond with OK status for verificationCode" when:
+      "valid json payload is provided" in:
         externalWireMockServer.stubFor(
           post(urlEqualTo(s"/phone-number-verification/verify-code"))
             .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}"""))
@@ -147,11 +139,9 @@ class VerifyControllerIntegrationSpec
         response.json shouldBe Json.parse(
           """{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}"""
         )
-      }
-    }
 
-    "respond with BAD_REQUEST status" when {
-      "invalid json payload is provided for verificationCode" in {
+    "respond with BAD_REQUEST status" when:
+      "invalid json payload is provided for verificationCode" in:
         externalWireMockServer.stubFor(
           post(urlEqualTo(s"/phone-number-verification/verify-code"))
             .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
@@ -173,11 +163,9 @@ class VerifyControllerIntegrationSpec
 
         response.status shouldBe BAD_REQUEST
         response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
-      }
-    }
 
-    "respond with BAD_REQUEST status" when {
-      "malformed json payload is provided for verificationCode" in {
+    "respond with BAD_REQUEST status" when:
+      "malformed json payload is provided for verificationCode" in:
         val response =
           wsClient
             .url(s"$baseUrl/phone-number-gateway/verify-code")
@@ -187,7 +175,3 @@ class VerifyControllerIntegrationSpec
 
         response.status shouldBe BAD_REQUEST
         response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
-      }
-    }
-  }
-}
