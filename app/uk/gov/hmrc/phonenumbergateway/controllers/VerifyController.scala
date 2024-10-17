@@ -32,29 +32,25 @@ import scala.concurrent.ExecutionContext
 class VerifyController @Inject() (cc: ControllerComponents, config: AppConfig, connector: DownstreamConnector, val authConnector: AuthConnector)(implicit
   ec: ExecutionContext
 ) extends BackendController(cc)
-    with ToggledAuthorisedFunctions {
+    with ToggledAuthorisedFunctions:
 
   private val logger = Logger(this.getClass.getSimpleName)
 
   def any(): Action[AnyContent] = Action.async { implicit request =>
-    toggledAuthorised(config.rejectInternalTraffic, AuthProviders(StandardApplication)) {
+    toggledAuthorised(config.rejectInternalTraffic, AuthProviders(StandardApplication)):
       val path = request.target.uri.toString.replace("phone-number-gateway", "phone-number-verification")
       val url = s"${config.verifyBaseUrl}$path"
 
       connector.forward(request, url, config.internalAuthToken)
-    }
   }
 
-  def checkConnectivity(): Unit = {
+  def checkConnectivity(): Unit =
     val url = s"${config.verifyBaseUrl}/phone-number/verify"
     connector.checkConnectivity(url, config.internalAuthToken).map { result =>
-      if (result) {
+      if (result)
         logger.info("Connectivity to phone-number-verification established")
-      } else {
+      else
         logger.error("ERROR: Could not connect to phone-number-verification")
-      }
     }
-  }
 
   checkConnectivity()
-}

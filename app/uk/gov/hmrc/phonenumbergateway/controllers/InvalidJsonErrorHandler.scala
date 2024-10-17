@@ -39,7 +39,7 @@ class InvalidJsonErrorHandler @Inject() (
   configuration: Configuration
 )(implicit ec: ExecutionContext)
     extends HttpErrorHandler
-    with BackendHeaderCarrierProvider {
+    with BackendHeaderCarrierProvider:
 
   import httpAuditEvent.dataEvent
 
@@ -61,9 +61,9 @@ class InvalidJsonErrorHandler @Inject() (
   protected val suppress5xxErrorMessages: Boolean =
     configuration.get[Boolean]("bootstrap.errorHandler.suppress5xxErrorMessages")
 
-  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
+  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     implicit val headerCarrier: HeaderCarrier = hc(request)
-    val result = statusCode match {
+    val result = statusCode match
       case NOT_FOUND =>
         auditConnector.sendEvent(
           dataEvent(
@@ -84,7 +84,7 @@ class InvalidJsonErrorHandler @Inject() (
             detail = Map.empty
           )
         )
-        def constructErrorMessage(input: String): String = {
+        def constructErrorMessage(input: String): String =
           val unrecognisedTokenJsonError = "^Invalid Json: Unrecognized token '(.*)':.*".r
           val invalidJson = "^(?s)Invalid Json:.*".r
           val jsonValidationError = "^Json validation error.*".r
@@ -92,14 +92,12 @@ class InvalidJsonErrorHandler @Inject() (
           val missingParameterError = "^Missing parameter:.*".r
           val characterParseError = "^Cannot parse parameter .* with value '(.*)' as Char: .* must be exactly one digit in length.$".r
           val parameterParseError = "^Cannot parse parameter .* as .*: For input string: \"(.*)\"$".r
-          input match {
+          input match
             case unrecognisedTokenJsonError(_) | invalidJson() | jsonValidationError() | booleanParsingError() | missingParameterError() =>
               "bad request, cause: invalid json"
             case characterParseError(toBeRedacted) => input.replace(toBeRedacted, "REDACTED")
             case parameterParseError(toBeRedacted) => input.replace(toBeRedacted, "REDACTED")
             case _                                 => "bad request, cause: REDACTED"
-          }
-        }
         val msg =
           if (suppress4xxErrorMessages) "Bad request"
           else constructErrorMessage(message)
@@ -121,11 +119,11 @@ class InvalidJsonErrorHandler @Inject() (
           else message
 
         Status(statusCode)(toJson(ErrorResponse(statusCode, msg)))
-    }
+        
     Future.successful(result)
-  }
+  end onClientError
 
-  override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] = {
+  override def onServerError(request: RequestHeader, ex: Throwable): Future[Result] =
     implicit val headerCarrier: HeaderCarrier = hc(request)
 
     val eventType = ex match {
@@ -170,11 +168,12 @@ class InvalidJsonErrorHandler @Inject() (
       )
     )
     Future.successful(new Status(errorResponse.statusCode)(Json.toJson(errorResponse)))
-  }
+  end onServerError
 
   private def logException(exception: Exception, responseCode: Int): Unit =
     if (upstreamWarnStatuses contains responseCode)
       logger.warn(exception.getMessage, exception)
     else
       logger.error(exception.getMessage, exception)
-}
+      
+end InvalidJsonErrorHandler

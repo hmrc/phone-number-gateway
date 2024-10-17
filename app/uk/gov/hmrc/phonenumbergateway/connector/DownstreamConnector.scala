@@ -74,6 +74,8 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging:
       case _ =>
         Future.successful(MethodNotAllowed("{\"code\": \"UNSUPPORTED_METHOD\", \"desc\": \"Unsupported HTTP method or content-type\"}").as(MimeTypes.JSON))
 
+  end forward
+
   def checkConnectivity(url: String, authToken: String)(implicit ec: ExecutionContext): Future[Boolean] =
     import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
     implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization(authToken)))
@@ -91,3 +93,5 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging:
           case t: Throwable =>
             Future.successful(false)
     catch case t: Throwable => Future.successful(false)
+
+end DownstreamConnector
