@@ -1,7 +1,7 @@
 {
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Phone Number Verification",
+  "title": "Phone Number Send Code Request",
   "type": "object",
   "properties": {
     "phoneNumber": {

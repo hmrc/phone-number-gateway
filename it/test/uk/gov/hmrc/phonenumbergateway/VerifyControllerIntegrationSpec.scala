@@ -109,7 +109,7 @@ class VerifyControllerIntegrationSpec
       "malformed json payload is provided" in {
         val response =
           wsClient
-            .url(s"$baseUrl/send-code")
+            .url(s"$baseUrl/phone-number-gateway/send-code")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
             .post("""{"phoneNumber"12123123456"}""")
             .futureValue
@@ -120,18 +120,17 @@ class VerifyControllerIntegrationSpec
     }
   }
 
-// Passcode tests
-  "PhoneNumberController" should {
-    "respond with OK status for Passcode" when {
+  "VerifyController" should {
+    "respond with OK status for verificationCode" when {
       "valid json payload is provided" in {
         externalWireMockServer.stubFor(
           post(urlEqualTo(s"/phone-number-verification/verify-code"))
-            .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "passcode": "ABCGED"}"""))
+            .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}"""))
             .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MimeTypes.JSON))
             .willReturn(
               aResponse()
                 .withBody(
-                  """{"phoneNumber": "12123123456",  "passcode": "ABCGED"}"""
+                  """{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}"""
                 )
                 .withStatus(OK)
             )
@@ -140,21 +139,21 @@ class VerifyControllerIntegrationSpec
           wsClient
             .url(s"$baseUrl/phone-number-gateway/verify-code")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"phoneNumber": "12123123456",  "passcode": "ABCGED"}""")
+            .post("""{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}""")
             .futureValue
 
         response.status shouldBe OK
         response.json shouldBe Json.parse(
-          """{"phoneNumber": "12123123456",  "passcode": "ABCGED"}"""
+          """{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}"""
         )
       }
     }
 
     "respond with BAD_REQUEST status" when {
-      "invalid json payload is provided for Passcode" in {
+      "invalid json payload is provided for verificationCode" in {
         externalWireMockServer.stubFor(
           post(urlEqualTo(s"/phone-number-verification/verify-code"))
-            .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "no-passcode": "ABCGED"}"""))
+            .withRequestBody(equalToJson("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
             .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MediaTypes.`application/json`.value))
             .willReturn(
               aResponse()
@@ -168,7 +167,7 @@ class VerifyControllerIntegrationSpec
           wsClient
             .url(s"$baseUrl/phone-number-gateway/verify-code")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"phoneNumber": "12123123456",  "no-passcode": "ABCGED"}""")
+            .post("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}""")
             .futureValue
 
         response.status shouldBe BAD_REQUEST
@@ -177,12 +176,12 @@ class VerifyControllerIntegrationSpec
     }
 
     "respond with BAD_REQUEST status" when {
-      "malformed json payload is provided for Passcode" in {
+      "malformed json payload is provided for verificationCode" in {
         val response =
           wsClient
             .url(s"$baseUrl/phone-number-gateway/verify-code")
             .withHttpHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
-            .post("""{"phoneNumber": "12123123456",  "passcode"ABCGED"}""")
+            .post("""{"phoneNumber": "12123123456",  "verificationCode"ABCGED"}""")
             .futureValue
 
         response.status shouldBe BAD_REQUEST
@@ -190,5 +189,4 @@ class VerifyControllerIntegrationSpec
       }
     }
   }
-
 }
