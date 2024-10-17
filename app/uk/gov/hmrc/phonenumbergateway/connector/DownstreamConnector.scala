@@ -24,6 +24,7 @@ import play.api.mvc.Results.{BadGateway, InternalServerError, MethodNotAllowed}
 import play.api.mvc.{AnyContent, Request, ResponseHeader, Result}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse, StringContextOps}
+import play.api.libs.ws.JsonBodyWritables.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,6 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
 
   def forward(request: Request[AnyContent], url: String, authToken: String)(implicit ec: ExecutionContext): Future[Result] = {
+    import play.api.libs.ws.DefaultBodyWritables
     import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
     logger.info(s"Forwarding to downstream url: $url")
@@ -47,14 +49,16 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
             .withBody(request.body.asJson.getOrElse(JsObject.empty)) // TODO: Better way to do this?
             .setHeader(onwardHeaders: _*)
             .execute[HttpResponse]
-            .map { response: HttpResponse =>
-              val returnHeaders = response.headers
-                .filterNot { case (n, _) => n == CONTENT_TYPE || n == CONTENT_LENGTH }
-                .view
-                .mapValues(x => x.mkString)
-                .toMap
+            .map { (response: HttpResponse) =>
+              {
+                val returnHeaders = response.headers
+                  .filterNot { case (n, _) => n == CONTENT_TYPE || n == CONTENT_LENGTH }
+                  .view
+                  .mapValues(x => x.mkString)
+                  .toMap
 
-              Result(ResponseHeader(response.status, returnHeaders), HttpEntity.Streamed(response.bodyAsSource, None, response.header(CONTENT_TYPE)))
+                Result(ResponseHeader(response.status, returnHeaders), HttpEntity.Streamed(response.bodyAsSource, None, response.header(CONTENT_TYPE)))
+              }
             }
             .recoverWith { case t: Throwable =>
               Future.successful(
