@@ -64,7 +64,7 @@ paths:
             $ref: 'docs/phone-number-verify-code-request.json'
           example:
             phoneNumber: "07712123456"
-            passcode: AB12CD
+            verificationCode: AB12CD
       required: true
     responses:
       '204':

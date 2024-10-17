@@ -42,22 +42,22 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
   // Phone number tests
-  "POST /insights" should {
+  "POST /send-code" should {
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     "forward a 200 response from the downstream service" in {
-      val response = """{"status":"VERIFIED", "message":"Phone verification code successfully sent"}""".stripMargin
+      val response = """{"status":"CODE_SENT", "message":"Phone verification code successfully sent"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify") =>
+        { case r @ SPOST(p"/send-code") =>
           Action(Ok(response).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
         val requestAddressJson = Json
           .parse("""{"phoneNumber": "12123123456"}""")
           .as[JsObject]
-        val fakeRequest = FakeRequest("POST", "/verify")
+        val fakeRequest = FakeRequest("POST", "/send-code")
           .withJsonBody(requestAddressJson)
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
@@ -72,7 +72,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify") =>
+        { case r @ SPOST(p"/send-code") =>
           Action(
             BadRequest(errorResponse).withHeaders(
               HeaderNames.CONTENT_TYPE -> MimeTypes.JSON
@@ -80,7 +80,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
           )
         }
       } { _ =>
-        val fakeRequest = FakeRequest("POST", "/verify")
+        val fakeRequest = FakeRequest("POST", "/send-code")
           .withJsonBody(Json.parse("""{"no-phoneNumber": "12123123456"}"""))
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
@@ -95,11 +95,11 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify") =>
+        { case r @ SPOST(p"/send-code") =>
           Action(BadRequest(errorResponse).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
-        val fakeRequest = FakeRequest("POST", "/verify")
+        val fakeRequest = FakeRequest("POST", "/send-code")
           .withTextBody("""{""")
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
@@ -112,7 +112,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     "return bad gateway if there is no connectivity to the downstream service" in {
       val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
-      val fakeRequest = FakeRequest("POST", "/phone-number-gateway/verify")
+      val fakeRequest = FakeRequest("POST", "/phone-number-gateway/send-code")
         .withJsonBody(Json.parse("""{"phoneNumber": "12123123456"}"""))
         .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
@@ -123,23 +123,22 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
   }
 
-  // Passcode tests
-  "POST /insights/passcode" should {
+  "POST /verify-code" should {
     implicit val hc: HeaderCarrier = HeaderCarrier()
 
     "forward a 200 response from the downstream service" in {
-      val response = """{"status":"VERIFIED", "message":"Phone verification code successfully sent"}""".stripMargin
+      val response = """{"status":"CODE_VERIFIED", "message":"Phone verification code successfully sent"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify/passcode") =>
+        { case r @ SPOST(p"/verify-code") =>
           Action(Ok(response).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
         val requestAddressJson = Json
-          .parse("""{"phoneNumber": "12123123456",  "passcode": "ABCGED"}""".stripMargin)
+          .parse("""{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}""".stripMargin)
           .as[JsObject]
-        val fakeRequest = FakeRequest("POST", "/verify/passcode")
+        val fakeRequest = FakeRequest("POST", "/verify-code")
           .withJsonBody(requestAddressJson)
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
@@ -150,11 +149,11 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "forward a 400 response from the downstream service" in {
-      val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: passcode"}""".stripMargin
+      val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: verificationCode"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify/passcode") =>
+        { case r @ SPOST(p"/verify-code") =>
           Action(
             BadRequest(errorResponse).withHeaders(
               HeaderNames.CONTENT_TYPE -> MimeTypes.JSON
@@ -162,8 +161,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
           )
         }
       } { _ =>
-        val fakeRequest = FakeRequest("POST", "/verify/passcode")
-          .withJsonBody(Json.parse("""{"phoneNumber": "12123123456",  "no-passcode": "ABCGED"}"""))
+        val fakeRequest = FakeRequest("POST", "/verify-code")
+          .withJsonBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
         val result = controller.any()(fakeRequest)
@@ -173,15 +172,15 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "handle a malformed json payload" in {
-      val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: passcode"}""".stripMargin
+      val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: verificationCode"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
         import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify/passcode") =>
+        { case r @ SPOST(p"/verify-code") =>
           Action(BadRequest(errorResponse).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
-        val fakeRequest = FakeRequest("POST", "/verify/passcode")
+        val fakeRequest = FakeRequest("POST", "/verify-code")
           .withTextBody("""{""")
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
@@ -194,8 +193,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     "return bad gateway if there is no connectivity to the downstream service" in {
       val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
-      val fakeRequest = FakeRequest("POST", "/phone-number-gateway/verify/passcode")
-        .withJsonBody(Json.parse("""{"phoneNumber": "12123123456",  "no-passcode": "ABCGED"}"""))
+      val fakeRequest = FakeRequest("POST", "/phone-number-gateway/verify-code")
+        .withJsonBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
         .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
       val result = controller.any()(fakeRequest)
