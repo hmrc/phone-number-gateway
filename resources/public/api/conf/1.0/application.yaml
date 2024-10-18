@@ -67,7 +67,7 @@ paths:
             verificationCode: AB12CD
       required: true
     responses:
-      '204':
+      '200':
         description: ''
         headers: { }
         content:
