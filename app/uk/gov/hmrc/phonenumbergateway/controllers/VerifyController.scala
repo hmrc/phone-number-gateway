@@ -46,7 +46,7 @@ class VerifyController @Inject() (cc: ControllerComponents, config: AppConfig, c
   }
 
   def checkConnectivity(): Unit = {
-    val url = s"${config.verifyBaseUrl}/phone-number/verify"
+    val url = s"${config.verifyBaseUrl}/phone-number-verification/send-code"
     connector.checkConnectivity(url, config.internalAuthToken).map { result =>
       if (result) {
         logger.info("Connectivity to phone-number-verification established")
