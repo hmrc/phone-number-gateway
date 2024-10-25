@@ -1,6 +1,4 @@
 {
-  "scopes": [
-  ],
   "api": {
     "name": "Phone Number",
     "description": "Verification of Phone number - provided by CIP (Customer Insights Platform) Insights and Reputation.",
@@ -20,4 +18,3 @@
     ]
   }
 }
-
