@@ -9,11 +9,11 @@
     "versions": [
       {
         "version": "1.0",
-        "status": "ALPHA",
+        "status": "BETA",
         "access": {
           "type": "PRIVATE"
         },
-        "endpointsEnabled": false
+        "endpointsEnabled": true
       }
     ]
   }
