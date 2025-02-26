@@ -19,7 +19,7 @@ lazy val microservice = Project("phone-number-gateway", file("."))
   )
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
-  .settings(PlayKeys.playDefaultPort := 6083)
+  .settings(PlayKeys.playDefaultPort := 9026)
   .settings(
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
   )
