@@ -10,14 +10,15 @@ This is a `private government` api and, as such, will need to be subscribed to b
 There are 2 published APIs:
 
 . `send-code` - to send a verification code to the supplied mobile phone number
+
 . `verify-code` - to verify that the code provided matches the one sent to the provided mobile phone number
 
 contact
 -------
 
-Our preferred contact method is our public channel in HMRC Digital Slack: `#team-cip-attribute-reputation`
+Our preferred contact method is our public channel in HMRC Digital Slack: `#team-cip-insights-and-reputation`
 
-If you don't have access to Slack, please email us at `cip-attribute-reputation-g@digital.hmrc.gov.uk`
+If you don't have access to Slack, please email us at `cip-insights-and-reputation-g@digital.hmrc.gov.uk`
 
 ### License
 
