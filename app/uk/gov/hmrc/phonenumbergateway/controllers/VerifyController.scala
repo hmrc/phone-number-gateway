@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.phonenumbergateway.controllers
 
-import play.api.Logger
 import play.api.mvc._
+import uk.gov.hmrc.auth.core.AuthProvider.StandardApplication
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
 import uk.gov.hmrc.phonenumbergateway.ToggledAuthorisedFunctions
 import uk.gov.hmrc.phonenumbergateway.config.AppConfig
 import uk.gov.hmrc.phonenumbergateway.connector.DownstreamConnector
-import uk.gov.hmrc.auth.core.AuthProvider.StandardApplication
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -34,8 +33,6 @@ class VerifyController @Inject() (cc: ControllerComponents, config: AppConfig, c
 ) extends BackendController(cc)
     with ToggledAuthorisedFunctions {
 
-  private val logger = Logger(this.getClass.getSimpleName)
-
   def any(): Action[AnyContent] = Action.async { implicit request =>
     toggledAuthorised(config.rejectInternalTraffic, AuthProviders(StandardApplication)) {
       val path = request.target.uri.toString.replace("phone-number-gateway", "phone-number-verification")
@@ -44,17 +41,4 @@ class VerifyController @Inject() (cc: ControllerComponents, config: AppConfig, c
       connector.forward(request, url, config.internalAuthToken)
     }
   }
-
-  def checkConnectivity(): Unit = {
-    val url = s"${config.verifyBaseUrl}/phone-number-verification/send-code"
-    connector.checkConnectivity(url, config.internalAuthToken).map { result =>
-      if (result) {
-        logger.info("Connectivity to phone-number-verification established")
-      } else {
-        logger.error("ERROR: Could not connect to phone-number-verification")
-      }
-    }
-  }
-
-  checkConnectivity()
 }
