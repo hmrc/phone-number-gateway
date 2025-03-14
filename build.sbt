@@ -18,7 +18,7 @@ lazy val microservice = Project("phone-number-gateway", file("."))
     buildInfoObject := "Info"
   )
   .settings(resolvers += Resolver.jcenterRepo)
-  .settings(CodeCoverageSettings.settings *)
+  .settings(CodeCoverageSettings.settings: _*)
   .settings(PlayKeys.playDefaultPort := 9026)
   .settings(
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"

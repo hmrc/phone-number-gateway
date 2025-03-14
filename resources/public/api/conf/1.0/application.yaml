@@ -9,7 +9,8 @@ info:
   description: >
     # Overview
     ### Phone number verification
-    This API enables your application to validate and verify a given phone number
+    This API enables your application to validate and verify a given phone number.
+
 servers:
   - url: https://test-api.service.hmrc.gov.uk/misc/phone-number
     description: Sandbox
@@ -17,67 +18,154 @@ servers:
     description: Production
 
 paths:
- /send-code:
-  post:
-    summary: Send a verification code to the phone number provided
-    description: >
-      Send a verification code to the phone number provided
-    operationId: PhoneNumberSendVerificationCode
-    security:
-      - applicationRestricted: [ ]
-    parameters: []
-    requestBody:
-      description: ''
-      content:
-        application/json:
+  /send-code:
+    post:
+      summary: Send a verification code to the phone number provided
+      description: >
+        Send a verification code to the phone number provided.
+      operationId: PhoneNumberSendVerificationCode
+      security:
+        - applicationRestricted: []
+      parameters:
+        - name: User-Agent
+          in: header
           schema:
-            $ref: 'docs/phone-number-send-code-request.json'
-          example:
-            phoneNumber: "07712123456"
-      required: true
-    responses:
-      '200':
-        description: ''
-        headers: { }
+            type: string
+          required: true
+          description: A string that identifies the client application making the request.
+      requestBody:
+        description: 'The phone number to which the verification code will be sent.'
         content:
           application/json:
             schema:
-              $ref: 'docs/phone-number-send-code-response.json'
+              $ref: 'docs/phone-number-send-code-request.json'
             example:
-              status: 'CODE_SENT'
-              message: 'Phone verification code successfully sent'
-    deprecated: false
- /verify-code:
-  post:
-    summary: Check that the verification code for the phone number provided is correct
-    description: >
-      Check that the verification code for the phone number provided is correct
-    operationId: PhoneNumberCheckVerificationCode
-    security:
-      - applicationRestricted: [ ]
-    parameters: []
-    requestBody:
-      description: ''
-      content:
-        application/json:
+              phoneNumber: "07712123456"
+        required: true
+      responses:
+        '200':
+          description: Phone verification code successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: 'docs/phone-number-send-code-response.json'
+              example:
+                status: 'CODE_SENT'
+                message: 'Phone verification code successfully sent'
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The type of error returned.
+                    example: "VALIDATION_ERROR"
+                  message:
+                    type: string
+                    description: The detailed error message.
+                    example: "Enter a valid telephone number"
+              examples:
+                invalidPhoneNumber:
+                  summary: Invalid telephone number example
+                  value:
+                    status: "VALIDATION_ERROR"
+                    message: "Enter a valid telephone number"
+                onlyMobileAllowed:
+                  summary: Only mobile numbers can be verified example
+                  value:
+                    status: "VALIDATION_ERROR"
+                    message: "Only mobile numbers can be verified"
+        '5XX':
+          description: |
+            An unexpected server error occurred when processing the request. These are temporary and consumers should try again.
+
+      deprecated: false
+
+  /verify-code:
+    post:
+      summary: Check that the verification code for the phone number provided is correct
+      description: >
+        Check that the verification code for the phone number provided is correct.
+      operationId: PhoneNumberCheckVerificationCode
+      security:
+        - applicationRestricted: []
+      parameters:
+        - name: User-Agent
+          in: header
           schema:
-            $ref: 'docs/phone-number-verify-code-request.json'
-          example:
-            phoneNumber: "07712123456"
-            verificationCode: AB12CD
-      required: true
-    responses:
-      '200':
-        description: ''
-        headers: { }
+            type: string
+          required: true
+          description: A string that identifies the client application making the request.
+      requestBody:
+        description: 'The phone number and verification code to verify the user’s phone number.'
         content:
           application/json:
             schema:
-              $ref: 'docs/phone-number-verify-code-response.json'
+              $ref: 'docs/phone-number-verify-code-request.json'
             example:
-              status: 'CODE_VERIFIED'
-              message: 'Verification code successfully verified'
-    deprecated: false
+              phoneNumber: "07712123456"
+              verificationCode: "VCCUPA"
+        required: true
+      responses:
+        '200':
+          description: Phone number successfully verified
+          content:
+            application/json:
+              schema:
+                $ref: 'docs/phone-number-verify-code-response.json'
+              example:
+                status: 'CODE_VERIFIED'
+                message: 'Verification code successfully verified'
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The type of error returned.
+                    example: "VALIDATION_ERROR"
+                  message:
+                    type: string
+                    description: The detailed error message.
+                    example: "Enter a valid verification code"
+              examples:
+                enterValidVerificationCode:
+                  summary: Invalid verification code example
+                  value:
+                    status: "VALIDATION_ERROR"
+                    message: "Enter a valid verification code"
+                enterValidPhoneNumberVerificationCode:
+                  summary: Invalid phone number or verification code example
+                  value:
+                    status: "VALIDATION_ERROR"
+                    message: "Enter a valid telephone number/verification code"
+        '404':
+          description: Verification code not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Error code indicating verification failure.
+                    example: "CODE_VERIFY_FAILURE"
+                  message:
+                    type: string
+                    description: Error message indicating an invalid verification code.
+                    example: "Enter a valid verification code"
+        '5XX':
+          description: |
+            An unexpected server error occurred when processing the request. These are temporary and consumers should try again.
+
+      deprecated: false
+
 components:
   securitySchemes:
     applicationRestricted:
@@ -88,15 +176,14 @@ components:
       flows:
         clientCredentials:
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
-          scopes: { }
+          scopes: {}
   parameters:
     acceptHeader:
       name: Accept
       in: header
       schema:
         type: string
-        enum: [
-          "application/vnd.hmrc.1.0+json",
-          "application/vnd.hmrc.1.0+xml"
-        ]
+        enum:
+          - "application/vnd.hmrc.1.0+json"
+          - "application/vnd.hmrc.1.0+xml"
       required: true
