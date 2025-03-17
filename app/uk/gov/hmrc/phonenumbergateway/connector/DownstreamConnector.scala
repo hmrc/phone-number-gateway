@@ -75,25 +75,4 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
     }
   }
 
-  def checkConnectivity(url: String, authToken: String)(implicit ec: ExecutionContext): Future[Boolean] = {
-    import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-    implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization(authToken)))
-
-    try {
-      httpClient
-        .post(url"$url")
-        .withBody(JsObject.empty)
-        .execute[HttpResponse]
-        .map {
-          case response if response.status > 400      => false
-          case response if response.status / 100 == 5 => false
-          case _                                      => true
-        }
-        .recoverWith { case t: Throwable =>
-          Future.successful(false)
-        }
-    } catch {
-      case t: Throwable => Future.successful(false)
-    }
-  }
 }
