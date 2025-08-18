@@ -1,21 +1,17 @@
-import play.core.PlayVersion
-import play.sbt.PlayImport._
-import sbt.Keys.libraryDependencies
-import sbt._
+import sbt.*
 
 object AppDependencies {
 
-  private val bootstrapVersion = "9.11.0"
-  
+  private val bootstrapVersion = "9.19.0"
+  private val playSuffix       = "-play-30"
 
-  val compile = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-backend-play-30"  % bootstrapVersion
+  val compile: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"             %% s"bootstrap-backend$playSuffix"  % bootstrapVersion
   )
 
-  val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-30"     % bootstrapVersion            % Test,
-    
-  )
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"             %% s"bootstrap-test$playSuffix"     % bootstrapVersion
+  ).map(_ % Test)
 
   val it = Seq.empty
 }

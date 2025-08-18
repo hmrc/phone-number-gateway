@@ -43,7 +43,6 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
   // Phone number tests
   "POST /send-code" should {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
 
     "forward a 200 response from the downstream service" in {
       val response = """{"status":"CODE_SENT", "message":"Phone verification code successfully sent"}""".stripMargin
