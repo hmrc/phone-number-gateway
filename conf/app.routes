@@ -2,3 +2,4 @@
 
 POST        /send-code          uk.gov.hmrc.phonenumbergateway.controllers.VerifyController.any()
 POST        /verify-code        uk.gov.hmrc.phonenumbergateway.controllers.VerifyController.any()
+POST        /check/insights     uk.gov.hmrc.phonenumbergateway.controllers.PhoneNumberInsightsController.checkInsights()
