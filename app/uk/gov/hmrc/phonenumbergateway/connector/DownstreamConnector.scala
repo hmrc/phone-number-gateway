@@ -38,23 +38,20 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
 
     (request.method, request.headers(HeaderNames.CONTENT_TYPE)) match {
       case ("POST", MimeTypes.JSON) =>
-        val onwardHeaders = request.headers.remove(CONTENT_LENGTH, HOST, AUTHORIZATION).headers
+        val onwardHeaders = request.headers.remove(CONTENT_LENGTH, CONTENT_TYPE, HOST, AUTHORIZATION).headers
         implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization(authToken)))
 
         try {
           httpClient
             .post(url"$url")
-            .withBody(request.body.asJson.getOrElse(JsObject.empty)) // TODO: Better way to do this?
+            .withBody(request.body.asJson.getOrElse(JsObject.empty))
             .setHeader(onwardHeaders: _*)
             .execute[HttpResponse]
             .map { response: HttpResponse =>
-              val returnHeaders = response.headers
-                .filterNot { case (n, _) => n == CONTENT_TYPE || n == CONTENT_LENGTH }
-                .view
-                .mapValues(x => x.mkString)
-                .toMap
-
-              Result(ResponseHeader(response.status, returnHeaders), HttpEntity.Streamed(response.bodyAsSource, None, response.header(CONTENT_TYPE)))
+              Result(
+                ResponseHeader(response.status, cleanseResponseHeaders(response)),
+                HttpEntity.Streamed(response.bodyAsSource, None, response.header(CONTENT_TYPE))
+              )
             }
             .recoverWith { case t: Throwable =>
               Future.successful(
@@ -74,5 +71,12 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
         Future.successful(MethodNotAllowed("{\"code\": \"UNSUPPORTED_METHOD\", \"desc\": \"Unsupported HTTP method or content-type\"}").as(MimeTypes.JSON))
     }
   }
+
+  private def cleanseResponseHeaders(response: HttpResponse): Map[String, String] =
+    response.headers
+      .filterNot { case (k, _) => Seq(CONTENT_TYPE, CONTENT_LENGTH, TRANSFER_ENCODING).map(_.toUpperCase).contains(k.toUpperCase) }
+      .view
+      .mapValues(_.mkString)
+      .toMap
 
 }
