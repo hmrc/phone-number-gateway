@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.phonenumbergateway.controllers
+package uk.gov.hmrc.phonenumbergateway.apiplatform
 
 import org.apache.pekko.stream.Materializer
 import org.scalatestplus.play._
