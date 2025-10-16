@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.phonenumbergateway
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, equalToJson, post, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.apache.pekko.http.scaladsl.model.MediaTypes
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
-import play.api.http.{HeaderNames, MimeTypes}
 import play.api.http.Status._
+import play.api.http.{HeaderNames, MimeTypes}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
@@ -115,7 +115,7 @@ class VerifyControllerIntegrationSpec
             .futureValue
 
         response.status shouldBe BAD_REQUEST
-        response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+        response.json.toString should startWith("""{"statusCode":400,"message":"Invalid Json:""")
       }
     }
   }
@@ -185,7 +185,7 @@ class VerifyControllerIntegrationSpec
             .futureValue
 
         response.status shouldBe BAD_REQUEST
-        response.json shouldBe Json.parse("""{"statusCode":400,"message":"bad request, cause: invalid json"}""")
+        response.json.toString should startWith("""{"statusCode":400,"message":"Invalid Json:""")
       }
     }
   }

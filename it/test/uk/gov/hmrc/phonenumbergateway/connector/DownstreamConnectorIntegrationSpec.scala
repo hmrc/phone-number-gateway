@@ -72,5 +72,17 @@ class DownstreamConnectorIntegrationSpec extends IntegrationBaseSpec with ScalaF
 
       play.api.test.Helpers.status(result) shouldBe (405)
     }
+
+    "return InternalServerError when an exception occurs during request forwarding" in new Test {
+      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, "/test-endpoint")
+        .withHeaders("Content-Type" -> "application/json")
+        .withJsonBody(Json.parse("""{"key": "value"}"""))
+
+      val result: Future[Result] = connector.forward(request, "invalid-url", "authToken")
+
+      play.api.test.Helpers.status(result) shouldBe INTERNAL_SERVER_ERROR
+      contentType(result) shouldBe Some("application/json")
+      contentAsString(result) should include("REQUEST_FORWARDING")
+    }
   }
 }

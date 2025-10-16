@@ -27,4 +27,5 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   val rejectInternalTraffic: Boolean = config.getOptional[Boolean]("microservice.rejectInternalTraffic").getOrElse(false)
   val internalAuthToken: String = config.get[String]("microservice.services.internal-auth.token")
   val verifyBaseUrl: String = servicesConfig.baseUrl("phone-number-verification")
+  val phoneNumberInsightsProxyBaseUrl: String = servicesConfig.baseUrl("phone-number-insights-proxy")
 }
