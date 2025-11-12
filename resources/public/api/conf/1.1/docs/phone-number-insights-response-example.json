@@ -1,0 +1,13 @@
+{
+  "attribute": "PHONE_NUMBER",
+  "value": "+447911123456",
+  "insights": {
+    "risk": {
+      "score": 100,
+      "reason": "ON_WATCH_LIST"
+    }
+  },
+  "watchlistData": {
+    "isOnWatchlist": true
+  }
+}
