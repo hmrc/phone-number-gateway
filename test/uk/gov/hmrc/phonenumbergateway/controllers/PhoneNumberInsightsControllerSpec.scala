@@ -22,12 +22,15 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.test.Helpers._
 import play.api.test._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.phonenumbergateway.config.AppConfig
+import uk.gov.hmrc.phonenumbergateway.config.{AppConfig, Constants}
 import uk.gov.hmrc.phonenumbergateway.connector.DownstreamConnector
+import uk.gov.hmrc.phonenumbergateway.controllers.actions.CorrelationIdActionImpl
+import uk.gov.hmrc.phonenumbergateway.models.{Error, MissingCorrelationId}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
@@ -35,21 +38,30 @@ class PhoneNumberInsightsControllerSpec extends AnyWordSpec with Matchers with S
 
   implicit val ec: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
 
+  val cc: ControllerComponents = stubControllerComponents()
+  val config: AppConfig = mock[AppConfig]
+  val connector: DownstreamConnector = mock[DownstreamConnector]
+  val authConnector: AuthConnector = mock[AuthConnector]
+
+  lazy val controller = new PhoneNumberInsightsController(
+    cc = cc,
+    withCorrelationId = new CorrelationIdActionImpl(),
+    config = config,
+    connector = connector,
+    authConnector = authConnector
+  )(cc.executionContext)
+
   "PhoneNumberInsightsController" should {
 
     "forward the request and preserve CorrelationId header when present" in {
-      val cc = stubControllerComponents()
-      val config = mock[AppConfig]
-      val connector = mock[DownstreamConnector]
-      val authConnector = mock[AuthConnector]
-      val controller = new PhoneNumberInsightsController(cc, config, connector, authConnector)(cc.executionContext)
 
       when(config.rejectInternalTraffic).thenReturn(false)
       when(config.phoneNumberInsightsProxyBaseUrl).thenReturn("http://proxy/")
       when(config.internalAuthToken).thenReturn("token")
 
       val fakeRequest = FakeRequest("GET", "/phone-number-gateway/insights")
-        .withHeaders("CorrelationId" -> "abc-123")
+        .withHeaders(Constants.xCorrelationId -> "abc-123")
+        .withBody(Json.obj("phoneNumber" -> "0234567890"))
 
       val resultStub = Results.Ok("forwarded").withHeaders("SomeHeader" -> "value")
       when(connector.forward(any(), any(), any())(any())).thenReturn(Future.successful(resultStub))
@@ -57,29 +69,23 @@ class PhoneNumberInsightsControllerSpec extends AnyWordSpec with Matchers with S
       val result = controller.checkInsights()(fakeRequest)
       status(result) shouldBe OK
       contentAsString(result) shouldBe "forwarded"
-      headers(result) should contain("CorrelationId" -> "abc-123")
+      headers(result) should contain(Constants.xCorrelationId -> "abc-123")
     }
 
-    "forward the request and not add CorrelationId header when absent" in {
-      val cc = stubControllerComponents()
-      val config = mock[AppConfig]
-      val connector = mock[DownstreamConnector]
-      val authConnector = mock[AuthConnector]
-      val controller = new PhoneNumberInsightsController(cc, config, connector, authConnector)(cc.executionContext)
+    "return BadRequests when xCorrelationId is missing" in {
 
       when(config.rejectInternalTraffic).thenReturn(false)
       when(config.phoneNumberInsightsProxyBaseUrl).thenReturn("http://proxy/")
       when(config.internalAuthToken).thenReturn("token")
 
       val fakeRequest = FakeRequest("GET", "/phone-number-gateway/insights")
-
-      val resultStub = Results.Ok("forwarded")
-      when(connector.forward(any(), any(), any())(any())).thenReturn(Future.successful(resultStub))
+        .withBody(Json.obj("phoneNumber" -> "0234567890"))
 
       val result = controller.checkInsights()(fakeRequest)
-      status(result) shouldBe OK
-      contentAsString(result) shouldBe "forwarded"
-      headers(result).get("CorrelationId") shouldBe None
+
+      status(result) shouldBe BAD_REQUEST
+      contentAsJson(result) shouldBe Json.toJson[Error](MissingCorrelationId)
+      headers(result).get(Constants.xCorrelationId) shouldBe None
     }
 
   }

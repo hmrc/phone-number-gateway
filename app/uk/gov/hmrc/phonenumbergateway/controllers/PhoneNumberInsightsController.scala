@@ -17,12 +17,14 @@
 package uk.gov.hmrc.phonenumbergateway.controllers
 
 import play.api.Logging
+import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthProvider.{PrivilegedApplication, StandardApplication}
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
 import uk.gov.hmrc.phonenumbergateway.ToggledAuthorisedFunctions
-import uk.gov.hmrc.phonenumbergateway.config.AppConfig
+import uk.gov.hmrc.phonenumbergateway.config.{AppConfig, Constants}
 import uk.gov.hmrc.phonenumbergateway.connector.DownstreamConnector
+import uk.gov.hmrc.phonenumbergateway.controllers.actions.CorrelationIdAction
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -31,6 +33,7 @@ import scala.concurrent.ExecutionContext
 @Singleton()
 class PhoneNumberInsightsController @Inject() (
   cc: ControllerComponents,
+  withCorrelationId: CorrelationIdAction,
   config: AppConfig,
   connector: DownstreamConnector,
   val authConnector: AuthConnector
@@ -39,22 +42,16 @@ class PhoneNumberInsightsController @Inject() (
     with ToggledAuthorisedFunctions
     with Logging {
 
-  private val CORRELATION_ID_HEADER = "CorrelationId"
+  def checkInsights(): Action[JsValue] =
+    (Action andThen withCorrelationId).async(parse.json) { implicit request =>
+      toggledAuthorised(config.rejectInternalTraffic, AuthProviders(StandardApplication, PrivilegedApplication)) {
 
-  def checkInsights(): Action[AnyContent] = Action.async { implicit request =>
-    toggledAuthorised(config.rejectInternalTraffic, AuthProviders(StandardApplication, PrivilegedApplication)) {
-      val correlationId: Option[String] = request.headers.get(CORRELATION_ID_HEADER)
-      val path = request.target.uri.toString.replace("phone-number-gateway", "phone-number-insights-proxy")
-      val url = s"${config.phoneNumberInsightsProxyBaseUrl}$path"
+        val path = request.target.uri.toString.replace("phone-number-gateway", "phone-number-insights-proxy")
+        val url = s"${config.phoneNumberInsightsProxyBaseUrl}$path"
 
-      connector
-        .forward(request, url, config.internalAuthToken)
-        .map { result =>
-          correlationId match {
-            case Some(id) => result.withHeaders(CORRELATION_ID_HEADER -> id)
-            case None     => result
-          }
-        }
+        connector
+          .forward(request, url, config.internalAuthToken)
+          .map(_.withHeaders(Constants.xCorrelationId -> request.correlationId))
+      }
     }
-  }
 }

@@ -23,12 +23,13 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
-import play.api.http.Status.OK
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.http.{HeaderNames, MimeTypes}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.test.ExternalWireMockSupport
+import uk.gov.hmrc.phonenumbergateway.models.{Error, MissingCorrelationId}
 
 class PhoneNumberInsightsControllerIntegrationSpec
     extends AnyWordSpec
@@ -49,7 +50,7 @@ class PhoneNumberInsightsControllerIntegrationSpec
       )
       .build()
 
-  private val CORRELATION_ID_HEADER_NAME = "CorrelationId"
+  private val CORRELATION_ID_HEADER_NAME = "X-Correlation-ID"
   private val testCorrelationId = "f0bd1f32-de51-45cc-9b18-0520d6e3ab1a"
 
   "POST /check/insights" should {
@@ -82,18 +83,8 @@ class PhoneNumberInsightsControllerIntegrationSpec
       }
     }
 
-    "exclude the CorrelationId header" when {
-      "missing from the initial request" in {
-        externalWireMockServer.stubFor(
-          post(urlEqualTo(s"/phone-number-insights-proxy/check/insights"))
-            .withRequestBody(equalToJson("""{"phone-number": "0123456789"}"""))
-            .withHeader(HeaderNames.CONTENT_TYPE, equalTo(MediaTypes.`application/json`.value))
-            .willReturn(
-              aResponse()
-                .withBody(Json.stringify(Json.obj("phone-number" -> "0123456789", "risk" -> "100")))
-                .withStatus(OK)
-            )
-        )
+    "return BadRequest" when {
+      "Correlation ID is missing from the initial request" in {
 
         val response =
           wsClient
@@ -102,9 +93,8 @@ class PhoneNumberInsightsControllerIntegrationSpec
             .post(Json.stringify(Json.obj("phone-number" -> "0123456789")))
             .futureValue
 
-        response.status shouldBe OK
-        response.header(CORRELATION_ID_HEADER_NAME) shouldBe None
-        response.json shouldBe Json.obj("phone-number" -> "0123456789", "risk" -> "100")
+        response.status shouldBe BAD_REQUEST
+        response.json shouldBe Json.toJson[Error](MissingCorrelationId)
       }
     }
   }
