@@ -156,8 +156,9 @@ paths:
             application/json:
               schema:
                 $ref: 'docs/phone-number-insights-response.json'
-              example:
-                $ref: 'docs/phone-number-insights-response-example.json'
+              examples:
+                success:
+                  externalValue: 'docs/phone-number-insights-response-success.json'
         '400':
           description: Validation Error
           content:
