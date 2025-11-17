@@ -14,14 +14,6 @@
           "type": "PRIVATE"
         },
         "endpointsEnabled": true
-      },
-      {
-        "version": "1.1",
-        "status": "BETA",
-        "access": {
-          "type": "PRIVATE"
-        },
-        "endpointsEnabled": false
       }
     ]
   }

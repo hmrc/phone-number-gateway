@@ -9,7 +9,7 @@ info:
   description: >
     # Overview
     ### Phone number verification
-    This API enables your application to validate and verify a given phone number.
+    This API enables your application to validate and verify a given phone number. It also provides an endpoint to return risking insights which you can use to make informed decisions about how to interact with your users.
 
 servers:
   - url: https://test-api.service.hmrc.gov.uk/misc/phone-number
@@ -27,12 +27,7 @@ paths:
       security:
         - applicationRestricted: []
       parameters:
-        - name: User-Agent
-          in: header
-          schema:
-            type: string
-          required: true
-          description: A string that identifies the client application making the request.
+        - $ref: "#/components/parameters/userAgentHeader"
       requestBody:
         description: 'The phone number to which the verification code will be sent.'
         content:
@@ -57,16 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: The type of error returned.
-                    example: "VALIDATION_ERROR"
-                  message:
-                    type: string
-                    description: The detailed error message.
-                    example: "Enter a valid telephone number"
+                $ref: "#/components/schemas/errorResponse"
               examples:
                 invalidPhoneNumber:
                   summary: Invalid telephone number example
@@ -93,12 +79,7 @@ paths:
       security:
         - applicationRestricted: []
       parameters:
-        - name: User-Agent
-          in: header
-          schema:
-            type: string
-          required: true
-          description: A string that identifies the client application making the request.
+        - $ref: "#/components/parameters/userAgentHeader"
       requestBody:
         description: 'The phone number and verification code to verify the user’s phone number.'
         content:
@@ -124,16 +105,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: The type of error returned.
-                    example: "VALIDATION_ERROR"
-                  message:
-                    type: string
-                    description: The detailed error message.
-                    example: "Enter a valid verification code"
+                $ref: "#/components/schemas/errorResponse"
               examples:
                 enterValidVerificationCode:
                   summary: Invalid verification code example
@@ -150,23 +122,86 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Error code indicating verification failure.
-                    example: "CODE_VERIFY_FAILURE"
-                  message:
-                    type: string
-                    description: Error message indicating an invalid verification code.
-                    example: "Enter a valid verification code"
+                $ref: "#/components/schemas/errorResponse"
         '5XX':
           description: |
             An unexpected server error occurred when processing the request. These are temporary and consumers should try again.
 
       deprecated: false
 
+  /check/insights:
+    post:
+      summary: Phone Number Insights
+      description: >
+        Check the risking insights for the provided phone number.
+      operationId: PhoneNumberInsights
+      security:
+        - applicationRestricted: [ ]
+      parameters:
+        - $ref: "#/components/parameters/userAgentHeader"
+        - $ref: "#/components/parameters/xCorrelationIdHeader"
+      requestBody:
+        description: 'The phone number to check for risking insights.'
+        content:
+          application/json:
+            schema:
+              $ref: 'docs/phone-number-insights-request.json'
+            example:
+              phoneNumber: "07712123456"
+        required: true
+      responses:
+        '200':
+          description: Risking insights for the phone number
+          content:
+            application/json:
+              schema:
+                $ref: 'docs/phone-number-insights-response.json'
+              example:
+                $ref: 'docs/phone-number-insights-response-example.json'
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+              examples:
+                missingCorrelationId:
+                  summary: Missing X-Correlation-ID Header
+                  value:
+                    status: "MISSING_CORRELATION_ID"
+                    message: "X-Correlation-ID header is missing from the request"
+        '403':
+          description: Authorisation errors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+              examples:
+                userNotAllowed:
+                  summary: User not allowed
+                  value:
+                    status: "USER_NOT_ALLOWED"
+                    message: "One or more user agents in 'some-service' are not authorized to use this service."
+        '502':
+          description: Downstream service issues
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorResponse"
+              examples:
+                downstreamError:
+                  summary: Issue on Downstream Gateway
+                  value:
+                    status: "REQUEST_DOWNSTREAM"
+                    message: "An unrecoverable error occurred when the downstream service tried to handle the request"
+        '5XX':
+          description: |
+            Any other unexpected server error occurred when processing the request. These are temporary and consumers should try again.
+
+      deprecated: false
+
 components:
+
   securitySchemes:
     applicationRestricted:
       type: oauth2
@@ -177,13 +212,35 @@ components:
         clientCredentials:
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
           scopes: {}
+
+  schemas:
+    errorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The type of error returned.
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: The detailed error message.
+          example: "Enter a valid verification code"
+
   parameters:
-    acceptHeader:
-      name: Accept
+    userAgentHeader:
+      name: User-Agent
       in: header
       schema:
         type: string
-        enum:
-          - "application/vnd.hmrc.1.0+json"
-          - "application/vnd.hmrc.1.0+xml"
+        example: "some-service"
       required: true
+      description: A string that identifies the client application making the request.
+    xCorrelationIdHeader:
+      name: X-Correlation-ID
+      in: header
+      schema:
+        type: string
+        pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        example: "123e4567-e89b-12d3-a456-426614174000"
+      required: true
+      description: A UUID to uniquely identify the request.
