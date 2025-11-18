@@ -19,8 +19,8 @@ package uk.gov.hmrc.phonenumbergateway.connector
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.apache.pekko.stream.Materializer
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import play.api.libs.json.Json
-import play.api.mvc.{AnyContentAsJson, Result}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.phonenumbergateway.IntegrationBaseSpec
@@ -52,9 +52,9 @@ class DownstreamConnectorIntegrationSpec extends IntegrationBaseSpec with ScalaF
           )
       )
 
-      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, "/test-endpoint")
+      val request: FakeRequest[JsValue] = FakeRequest(POST, "/test-endpoint")
         .withHeaders("Content-Type" -> "application/json")
-        .withJsonBody(Json.parse("""{"key": "value"}"""))
+        .withBody(Json.parse("""{"key": "value"}"""))
 
       val result: Future[Result] = connector.forward(request, s"http://localhost:${WireMockHelper.wireMockPort}/test-endpoint", "authToken")
 
@@ -64,9 +64,9 @@ class DownstreamConnectorIntegrationSpec extends IntegrationBaseSpec with ScalaF
     }
 
     "return a MethodNotAllowed when the request isn't an expected POST" in new Test {
-      val request: FakeRequest[AnyContentAsJson] = FakeRequest(GET, "/test-endpoint")
+      val request: FakeRequest[JsValue] = FakeRequest(GET, "/test-endpoint")
         .withHeaders("Content-Type" -> "application/json")
-        .withJsonBody(Json.parse("""{"key": "value"}"""))
+        .withBody(Json.parse("""{"key": "value"}"""))
 
       val result: Future[Result] = connector.forward(request, s"http://localhost:${WireMockHelper.wireMockPort}/test-endpoint", "authToken")
 
@@ -74,9 +74,9 @@ class DownstreamConnectorIntegrationSpec extends IntegrationBaseSpec with ScalaF
     }
 
     "return InternalServerError when an exception occurs during request forwarding" in new Test {
-      val request: FakeRequest[AnyContentAsJson] = FakeRequest(POST, "/test-endpoint")
+      val request: FakeRequest[JsValue] = FakeRequest(POST, "/test-endpoint")
         .withHeaders("Content-Type" -> "application/json")
-        .withJsonBody(Json.parse("""{"key": "value"}"""))
+        .withBody(Json.parse("""{"key": "value"}"""))
 
       val result: Future[Result] = connector.forward(request, "invalid-url", "authToken")
 

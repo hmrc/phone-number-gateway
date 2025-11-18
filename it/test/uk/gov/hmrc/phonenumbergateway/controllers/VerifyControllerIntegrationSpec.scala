@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.phonenumbergateway
+package uk.gov.hmrc.phonenumbergateway.controllers
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.apache.pekko.http.scaladsl.model.MediaTypes

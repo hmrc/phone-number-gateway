@@ -18,10 +18,10 @@ package uk.gov.hmrc.phonenumbergateway.connector
 
 import play.api.Logging
 import play.api.http.HeaderNames._
-import play.api.http.{HeaderNames, HttpEntity, MimeTypes}
-import play.api.libs.json.JsObject
+import play.api.http.{HttpEntity, MimeTypes}
+import play.api.libs.json.JsValue
 import play.api.mvc.Results.{BadGateway, InternalServerError, MethodNotAllowed}
-import play.api.mvc.{AnyContent, Request, ResponseHeader, Result}
+import play.api.mvc.{Request, ResponseHeader, Result}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse, StringContextOps}
 
@@ -31,20 +31,20 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
 
-  def forward(request: Request[AnyContent], url: String, authToken: String)(implicit ec: ExecutionContext): Future[Result] = {
+  def forward(request: Request[JsValue], url: String, authToken: String)(implicit ec: ExecutionContext): Future[Result] = {
     import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
-    logger.info(s"Forwarding to downstream url: $url")
+    logger.debug(s"Forwarding to downstream url: $url")
 
-    (request.method, request.headers(HeaderNames.CONTENT_TYPE)) match {
-      case ("POST", MimeTypes.JSON) =>
+    request.method match {
+      case "POST" =>
         val onwardHeaders = request.headers.remove(CONTENT_LENGTH, CONTENT_TYPE, HOST, AUTHORIZATION).headers
         implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization(authToken)))
 
         try {
           httpClient
             .post(url"$url")
-            .withBody(request.body.asJson.getOrElse(JsObject.empty))
+            .withBody(request.body)
             .setHeader(onwardHeaders: _*)
             .execute[HttpResponse]
             .map { response: HttpResponse =>
@@ -68,7 +68,7 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
         }
 
       case _ =>
-        Future.successful(MethodNotAllowed("{\"code\": \"UNSUPPORTED_METHOD\", \"desc\": \"Unsupported HTTP method or content-type\"}").as(MimeTypes.JSON))
+        Future.successful(MethodNotAllowed("{\"code\": \"UNSUPPORTED_METHOD\", \"desc\": \"Unsupported HTTP method\"}").as(MimeTypes.JSON))
     }
   }
 

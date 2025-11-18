@@ -57,7 +57,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
           .parse("""{"phoneNumber": "12123123456"}""")
           .as[JsObject]
         val fakeRequest = FakeRequest("POST", "/send-code")
-          .withJsonBody(requestAddressJson)
+          .withBody(requestAddressJson)
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
         val result = controller.any()(fakeRequest)
@@ -80,7 +80,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         }
       } { _ =>
         val fakeRequest = FakeRequest("POST", "/send-code")
-          .withJsonBody(Json.parse("""{"no-phoneNumber": "12123123456"}"""))
+          .withBody(Json.parse("""{"no-phoneNumber": "12123123456"}"""))
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
         val result = controller.any()(fakeRequest)
@@ -90,29 +90,21 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "handle a malformed json payload" in {
-      val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: phoneNumber"}""".stripMargin
 
-      Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
-        import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/send-code") =>
-          Action(BadRequest(errorResponse).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
-        }
-      } { _ =>
-        val fakeRequest = FakeRequest("POST", "/send-code")
-          .withTextBody("""{""")
-          .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+      val fakeRequest = FakeRequest("POST", "/send-code")
+        .withTextBody("""{""")
+        .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
-        val result = controller.any()(fakeRequest)
-        status(result) shouldBe Status.BAD_REQUEST
-        contentAsString(result) shouldBe errorResponse
-      }
+      val result = controller.any()(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsString(result) should include("Invalid Json")
     }
 
     "return bad gateway if there is no connectivity to the downstream service" in {
       val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
       val fakeRequest = FakeRequest("POST", "/phone-number-gateway/send-code")
-        .withJsonBody(Json.parse("""{"phoneNumber": "12123123456"}"""))
+        .withBody(Json.parse("""{"phoneNumber": "12123123456"}"""))
         .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
       val result = controller.any()(fakeRequest)
@@ -138,7 +130,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
           .parse("""{"phoneNumber": "12123123456",  "verificationCode": "ABCGED"}""".stripMargin)
           .as[JsObject]
         val fakeRequest = FakeRequest("POST", "/verify-code")
-          .withJsonBody(requestAddressJson)
+          .withBody(requestAddressJson)
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
         val result = controller.any()(fakeRequest)
@@ -161,7 +153,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
         }
       } { _ =>
         val fakeRequest = FakeRequest("POST", "/verify-code")
-          .withJsonBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
+          .withBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
           .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
         val result = controller.any()(fakeRequest)
@@ -171,29 +163,22 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "handle a malformed json payload" in {
-      val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: verificationCode"}""".stripMargin
 
-      Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
-        import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify-code") =>
-          Action(BadRequest(errorResponse).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
-        }
-      } { _ =>
-        val fakeRequest = FakeRequest("POST", "/verify-code")
-          .withTextBody("""{""")
-          .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+      val fakeRequest = FakeRequest("POST", "/verify-code")
+        .withBody("""{""")
+        .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
-        val result = controller.any()(fakeRequest)
-        status(result) shouldBe Status.BAD_REQUEST
-        contentAsString(result) shouldBe errorResponse
-      }
+      val result = controller.any()(fakeRequest)
+
+      status(result) shouldBe Status.BAD_REQUEST
+      contentAsString(result) should include("Invalid Json")
     }
 
     "return bad gateway if there is no connectivity to the downstream service" in {
       val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
       val fakeRequest = FakeRequest("POST", "/phone-number-gateway/verify-code")
-        .withJsonBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
+        .withBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
         .withHeaders("True-Calling-Client" -> "example-service", HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 
       val result = controller.any()(fakeRequest)

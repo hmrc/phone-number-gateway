@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.phonenumbergateway.controllers
 
+import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthProvider.StandardApplication
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthProviders}
@@ -33,7 +34,7 @@ class VerifyController @Inject() (cc: ControllerComponents, config: AppConfig, c
 ) extends BackendController(cc)
     with ToggledAuthorisedFunctions {
 
-  def any(): Action[AnyContent] = Action.async { implicit request =>
+  def any(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     toggledAuthorised(config.rejectInternalTraffic, AuthProviders(StandardApplication)) {
       val path = request.target.uri.toString.replace("phone-number-gateway", "phone-number-verification")
       val url = s"${config.verifyBaseUrl}$path"
