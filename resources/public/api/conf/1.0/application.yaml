@@ -57,12 +57,12 @@ paths:
                 invalidPhoneNumber:
                   summary: Invalid telephone number example
                   value:
-                    status: "VALIDATION_ERROR"
+                    statusCode: "VALIDATION_ERROR"
                     message: "Enter a valid telephone number"
                 onlyMobileAllowed:
                   summary: Only mobile numbers can be verified example
                   value:
-                    status: "VALIDATION_ERROR"
+                    statusCode: "VALIDATION_ERROR"
                     message: "Only mobile numbers can be verified"
         '5XX':
           description: |
@@ -110,12 +110,12 @@ paths:
                 enterValidVerificationCode:
                   summary: Invalid verification code example
                   value:
-                    status: "VALIDATION_ERROR"
+                    statusCode: "VALIDATION_ERROR"
                     message: "Enter a valid verification code"
                 enterValidPhoneNumberVerificationCode:
                   summary: Invalid phone number or verification code example
                   value:
-                    status: "VALIDATION_ERROR"
+                    statusCode: "VALIDATION_ERROR"
                     message: "Enter a valid telephone number/verification code"
         '404':
           description: Verification code not found
@@ -169,7 +169,7 @@ paths:
                 missingCorrelationId:
                   summary: Missing X-Correlation-ID Header
                   value:
-                    status: "MISSING_CORRELATION_ID"
+                    statusCode: "MISSING_CORRELATION_ID"
                     message: "X-Correlation-ID header is missing from the request"
         '403':
           description: Authorisation errors
@@ -181,7 +181,7 @@ paths:
                 userNotAllowed:
                   summary: User not allowed
                   value:
-                    status: "USER_NOT_ALLOWED"
+                    statusCode: "USER_NOT_ALLOWED"
                     message: "One or more user agents in 'some-service' are not authorized to use this service."
         '502':
           description: Downstream service issues
@@ -193,7 +193,7 @@ paths:
                 downstreamError:
                   summary: Issue on Downstream Gateway
                   value:
-                    status: "REQUEST_DOWNSTREAM"
+                    statusCode: "REQUEST_DOWNSTREAM"
                     message: "An unrecoverable error occurred when the downstream service tried to handle the request"
         '5XX':
           description: |
@@ -218,7 +218,7 @@ components:
     errorResponse:
       type: object
       properties:
-        status:
+        statusCode:
           type: string
           description: The type of error returned.
           example: "VALIDATION_ERROR"

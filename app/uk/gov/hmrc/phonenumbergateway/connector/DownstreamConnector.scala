@@ -18,12 +18,13 @@ package uk.gov.hmrc.phonenumbergateway.connector
 
 import play.api.Logging
 import play.api.http.HeaderNames._
-import play.api.http.{HttpEntity, MimeTypes}
-import play.api.libs.json.JsValue
+import play.api.http.HttpEntity
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.{BadGateway, InternalServerError, MethodNotAllowed}
 import play.api.mvc.{Request, ResponseHeader, Result}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.phonenumbergateway.models.{DownstreamError, Error, RequestForwardingError, UnsupportedMethodError}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,21 +55,18 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
               )
             }
             .recoverWith { case t: Throwable =>
-              Future.successful(
-                BadGateway("{\"code\": \"REQUEST_DOWNSTREAM\", \"desc\": \"An issue occurred when the downstream service tried to handle the request\"}")
-                  .as(MimeTypes.JSON)
-              )
+              logger.warn(s"[forward] Error occurred when processing the request with the downstream service: ${t.getMessage}")
+              Future.successful(BadGateway(Json.toJson[Error](DownstreamError)))
             }
         } catch {
           case t: Throwable =>
-            Future.successful(
-              InternalServerError("{\"code\": \"REQUEST_FORWARDING\", \"desc\": \"An issue occurred when forwarding the request to the downstream service\"}")
-                .as(MimeTypes.JSON)
-            )
+            logger.error(s"[forward] An exception was thrown when trying to forward the request to downstream service: ${t.getMessage}")
+            Future.successful(InternalServerError(Json.toJson[Error](RequestForwardingError)))
         }
 
       case _ =>
-        Future.successful(MethodNotAllowed("{\"code\": \"UNSUPPORTED_METHOD\", \"desc\": \"Unsupported HTTP method\"}").as(MimeTypes.JSON))
+        logger.info(s"[forward] Request received with unsupported HTTP method: ${request.method}")
+        Future.successful(MethodNotAllowed(Json.toJson[Error](UnsupportedMethodError)))
     }
   }
 
