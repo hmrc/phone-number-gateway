@@ -32,7 +32,7 @@ case object MissingCorrelationId extends Error("MISSING_CORRELATION_ID", s"${Con
 object Error {
   implicit val writes: Writes[Error] = Writes { model =>
     Json.obj(
-      "status" -> model.code,
+      "statusCode" -> model.code,
       "message" -> model.desc
     )
   }
