@@ -21,12 +21,18 @@ import uk.gov.hmrc.phonenumbergateway.config.Constants
 
 sealed class Error(val code: String, val desc: String)
 
+case object DownstreamError extends Error("REQUEST_DOWNSTREAM", "An issue occurred when the downstream service tried to handle the request")
+
+case object RequestForwardingError extends Error("REQUEST_FORWARDING", "An issue occurred when forwarding the request to the downstream service")
+
+case object UnsupportedMethodError extends Error("UNSUPPORTED_METHOD", "Unsupported HTTP method")
+
 case object MissingCorrelationId extends Error("MISSING_CORRELATION_ID", s"${Constants.xCorrelationId} header is missing from the request")
 
 object Error {
   implicit val writes: Writes[Error] = Writes { model =>
     Json.obj(
-      "statusCode" -> model.code,
+      "status" -> model.code,
       "message" -> model.desc
     )
   }

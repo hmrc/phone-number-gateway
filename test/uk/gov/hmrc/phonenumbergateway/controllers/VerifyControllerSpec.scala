@@ -30,6 +30,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.core.server.{Server, ServerConfig}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.phonenumbergateway.models.{DownstreamError, Error}
 
 class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
   val insightsPort = 11222
@@ -101,7 +102,6 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "return bad gateway if there is no connectivity to the downstream service" in {
-      val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
       val fakeRequest = FakeRequest("POST", "/phone-number-gateway/send-code")
         .withBody(Json.parse("""{"phoneNumber": "12123123456"}"""))
@@ -109,7 +109,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
       val result = controller.any()(fakeRequest)
       status(result) shouldBe Status.BAD_GATEWAY
-      contentAsString(result) shouldBe errorResponse
+      contentAsJson(result) shouldBe Json.toJson[Error](DownstreamError)
     }
 
   }
@@ -175,7 +175,6 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
     }
 
     "return bad gateway if there is no connectivity to the downstream service" in {
-      val errorResponse = """{"code": "REQUEST_DOWNSTREAM", "desc": "An issue occurred when the downstream service tried to handle the request"}""".stripMargin
 
       val fakeRequest = FakeRequest("POST", "/phone-number-gateway/verify-code")
         .withBody(Json.parse("""{"phoneNumber": "12123123456",  "no-verification-code": "ABCGED"}"""))
@@ -183,7 +182,7 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
 
       val result = controller.any()(fakeRequest)
       status(result) shouldBe Status.BAD_GATEWAY
-      contentAsString(result) shouldBe errorResponse
+      contentAsJson(result) shouldBe Json.toJson[Error](DownstreamError)
     }
 
   }
