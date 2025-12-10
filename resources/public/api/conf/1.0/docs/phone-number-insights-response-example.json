@@ -3,11 +3,16 @@
   "value": "+447911123456",
   "insights": {
     "risk": {
-      "score": 100,
-      "reason": "ON_WATCH_LIST"
+      "score": 22.5,
+      "reason": "NOT_ON_WATCH_LIST. PHONE_NUMBER +447911123456 is 3 hops from a something risky. The average PHONE_NUMBER is 4.7 hops from something risky."
+    },
+    "watchlistData": {
+      "isOnWatchlist": true
+    },
+    "graphData": {
+      "reasons": [
+        "PHONE_NUMBER +447911123456 is 3 hops from a something risky. The average PHONE_NUMBER is 4.7 hops from something risky."
+      ]
     }
-  },
-  "watchlistData": {
-    "isOnWatchlist": true
   }
 }
