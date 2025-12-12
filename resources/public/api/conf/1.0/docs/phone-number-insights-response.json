@@ -41,20 +41,35 @@
             }
           },
           "required": ["score", "reason"]
+        },
+        "watchlistData": {
+          "type": "object",
+          "properties": {
+            "isOnWatchlist": {
+              "type": "boolean",
+              "example": true
+            }
+          },
+          "required": ["isOnWatchlist"]
         }
       },
-      "required": ["risk"]
-    },
-    "watchlistData": {
-      "type": "object",
-      "properties": {
-        "isOnWatchlist": {
-          "type": "boolean",
-          "example": true
-        }
+      "graphData": {
+        "type": "object",
+        "properties": {
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "examples": ["PHONE_NUMBER +447911123456 is 3 hops from a something risky. The average PHONE_NUMBER is 4.7 hops from something risky."]
+            }
+          }
+        },
+        "required": [
+          "reasons"
+        ]
       },
-      "required": ["isOnWatchlist"]
+      "required": ["risk", "watchlistData", "graphData"]
     }
   },
-  "required": ["attribute", "value", "insights", "watchlistData"]
+  "required": ["attribute", "value", "insights"]
 }

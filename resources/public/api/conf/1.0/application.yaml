@@ -158,7 +158,7 @@ paths:
                 $ref: 'docs/phone-number-insights-response.json'
               examples:
                 success:
-                  externalValue: 'docs/phone-number-insights-response-success.json'
+                  externalValue: 'docs/phone-number-insights-response-example.json'
         '400':
           description: Validation Error
           content:
