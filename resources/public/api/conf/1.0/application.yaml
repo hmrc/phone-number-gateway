@@ -6,7 +6,7 @@ info:
     name: CIP Insights & Reputation Team
     email: cip-insights-and-reputation-g@digital.hmrc.gov.uk
   version: '1.0'
-  description: >
+  description: |
     # Overview
     ### Phone number verification
     This API enables your application to validate and verify a given phone number. It also provides an endpoint to return risking insights which you can use to make informed decisions about how to interact with your users.
