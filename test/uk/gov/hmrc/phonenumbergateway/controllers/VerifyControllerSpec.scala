@@ -24,12 +24,11 @@ import play.api.Application
 import play.api.http.{HeaderNames, MimeTypes, Status}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.Results._
-import play.api.routing.sird.{POST => SPOST, _}
+import play.api.mvc.Results.*
+import play.api.routing.sird.{POST as SPOST, *}
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import play.core.server.{Server, ServerConfig}
-import uk.gov.hmrc.http.HeaderCarrier
 
 class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
   val insightsPort = 11222
@@ -48,8 +47,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val response = """{"status":"CODE_SENT", "message":"Phone verification code successfully sent"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
-        import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/send-code") =>
+        import components.defaultActionBuilder as Action
+        { case SPOST(p"/send-code") =>
           Action(Ok(response).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
@@ -70,8 +69,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: phoneNumber"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
-        import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/send-code") =>
+        import components.defaultActionBuilder as Action
+        { case SPOST(p"/send-code") =>
           Action(
             BadRequest(errorResponse).withHeaders(
               HeaderNames.CONTENT_TYPE -> MimeTypes.JSON
@@ -115,14 +114,13 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
   }
 
   "POST /verify-code" should {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
 
     "forward a 200 response from the downstream service" in {
       val response = """{"status":"CODE_VERIFIED", "message":"Phone verification code successfully sent"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
-        import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify-code") =>
+        import components.defaultActionBuilder as Action
+        { case SPOST(p"/verify-code") =>
           Action(Ok(response).withHeaders(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
         }
       } { _ =>
@@ -143,8 +141,8 @@ class VerifyControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPer
       val errorResponse = """{"code": "MALFORMED_JSON", "path.missing: verificationCode"}""".stripMargin
 
       Server.withRouterFromComponents(ServerConfig(port = Some(insightsPort))) { components =>
-        import components.{defaultActionBuilder => Action}
-        { case r @ SPOST(p"/verify-code") =>
+        import components.defaultActionBuilder as Action
+        { case SPOST(p"/verify-code") =>
           Action(
             BadRequest(errorResponse).withHeaders(
               HeaderNames.CONTENT_TYPE -> MimeTypes.JSON

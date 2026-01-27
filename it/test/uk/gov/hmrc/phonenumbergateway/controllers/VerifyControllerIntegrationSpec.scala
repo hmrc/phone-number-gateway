@@ -28,6 +28,7 @@ import play.api.http.{HeaderNames, MimeTypes}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
+import play.api.libs.ws.writeableOf_String
 import uk.gov.hmrc.http.test.ExternalWireMockSupport
 
 class VerifyControllerIntegrationSpec

@@ -24,6 +24,7 @@ import play.api.mvc.Results.{BadGateway, InternalServerError, MethodNotAllowed}
 import play.api.mvc.{Request, ResponseHeader, Result}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpResponse, StringContextOps}
+import play.api.libs.ws.writeableOf_JsValue
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -47,20 +48,20 @@ class DownstreamConnector @Inject() (httpClient: HttpClientV2) extends Logging {
             .withBody(request.body)
             .setHeader(onwardHeaders: _*)
             .execute[HttpResponse]
-            .map { response: HttpResponse =>
+            .map { (response: HttpResponse) =>
               Result(
                 ResponseHeader(response.status, cleanseResponseHeaders(response)),
                 HttpEntity.Streamed(response.bodyAsSource, None, response.header(CONTENT_TYPE))
               )
             }
-            .recoverWith { case t: Throwable =>
+            .recoverWith { case _: Throwable =>
               Future.successful(
                 BadGateway("{\"code\": \"REQUEST_DOWNSTREAM\", \"desc\": \"An issue occurred when the downstream service tried to handle the request\"}")
                   .as(MimeTypes.JSON)
               )
             }
         } catch {
-          case t: Throwable =>
+          case _: Throwable =>
             Future.successful(
               InternalServerError("{\"code\": \"REQUEST_FORWARDING\", \"desc\": \"An issue occurred when forwarding the request to the downstream service\"}")
                 .as(MimeTypes.JSON)

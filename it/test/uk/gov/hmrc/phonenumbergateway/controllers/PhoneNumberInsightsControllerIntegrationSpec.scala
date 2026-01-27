@@ -30,6 +30,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.http.test.ExternalWireMockSupport
 import uk.gov.hmrc.phonenumbergateway.models.{Error, MissingCorrelationId}
+import play.api.libs.ws.writeableOf_String
 
 class PhoneNumberInsightsControllerIntegrationSpec
     extends AnyWordSpec
