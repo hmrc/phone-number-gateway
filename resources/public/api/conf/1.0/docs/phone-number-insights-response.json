@@ -51,34 +51,90 @@
             }
           },
           "required": ["isOnWatchlist"]
-        }
-      },
-      "graphData": {
-        "type": "object",
-        "properties": {
-          "reasons": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "examples": ["PHONE_NUMBER +447911123456 is 3 hops from a something risky. The average PHONE_NUMBER is 4.7 hops from something risky."]
+        },
+        "graphData": {
+          "type": "object",
+          "properties": {
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "examples": ["PHONE_NUMBER +447911123456 is 3 hops from a something risky. The average PHONE_NUMBER is 4.7 hops from something risky."]
+              }
+            },
+            "hops": {
+              "type": "integer",
+              "minimum": 0,
+              "examples": [0, 1, 2, 3, 4, 5]
+            },
+            "avgHops": {
+              "type": "number",
+              "minimum": 0.0,
+              "examples": [1.5, 3.6, 4.7]
             }
           },
-          "hops": {
-            "type": "integer",
-            "minimum": 0,
-            "examples": [0, 1, 2, 3, 4, 5]
-          },
-          "avgHops": {
-            "type": "number",
-            "minimum": 0.0,
-            "examples": [1.5, 3.6, 4.7]
-          }
+          "required": [
+            "reasons"
+          ]
         },
-        "required": [
-          "reasons"
-        ]
+        "relationship": {
+          "type": "object",
+          "properties": {
+            "attributes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "attributeType": {
+                    "type": "string",
+                    "enum": ["person_full_name", "user_id", "agent_code", "sa_utr", "ct_utr", "paye_ref", "vrn"]
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 1,
+                    "examples": [1, 2, 100]
+                  },
+                  "attributeValues": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "attributeValue": {
+                          "type": "string",
+                          "examples": ["John doe"]
+                        },
+                        "numberOfOccurrences": {
+                          "type": "number",
+                          "minimum": 1,
+                          "examples": [1, 2, 100]
+                        },
+                        "lastSeen": {
+                          "type": "string",
+                          "examples": ["2025-11-11T14:31:23.083Z"]
+                        }
+                      },
+                      "required": [
+                        "attributeValue",
+                        "numberOfOccurrences",
+                        "lastSeen"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "attributeType",
+                  "count",
+                  "attributeValues"
+                ]
+              }
+            }
+          },
+          "required": [
+            "attributes"
+          ]
+        }
       },
-      "required": ["risk", "watchlistData", "graphData"]
+      "required": ["risk", "watchlistData", "graphData", "relationship"]
     }
   },
   "required": ["attribute", "value", "insights"]
