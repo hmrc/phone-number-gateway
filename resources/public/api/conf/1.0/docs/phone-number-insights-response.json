@@ -85,7 +85,7 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "attribute": {
+                  "attributeType": {
                     "type": "string",
                     "enum": ["person_full_name", "user_id", "agent_code", "sa_utr", "ct_utr", "paye_ref", "vrn"]
                   },
@@ -99,11 +99,11 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "value": {
+                        "attributeValue": {
                           "type": "string",
                           "examples": ["John doe"]
                         },
-                        "numOfOccurrences": {
+                        "numberOfOccurrences": {
                           "type": "number",
                           "minimum": 1,
                           "examples": [1, 2, 100]
@@ -114,15 +114,15 @@
                         }
                       },
                       "required": [
-                        "value",
-                        "numOfOccurrences",
+                        "attributeValue",
+                        "numberOfOccurrences",
                         "lastSeen"
                       ]
                     }
                   }
                 },
                 "required": [
-                  "attribute",
+                  "attributeType",
                   "count",
                   "attributeValues"
                 ]
