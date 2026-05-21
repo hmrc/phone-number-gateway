@@ -57,7 +57,7 @@
           }
         }
       ],
-      "reason": "Attribute john.doe@gmail.com is in the database. The vertex id is 26052, data is included."
+      "reason": "Attribute +447911123456 is in the database. The vertex id is 1, data is included."
     },
     "relationship": {
       "attributes": [

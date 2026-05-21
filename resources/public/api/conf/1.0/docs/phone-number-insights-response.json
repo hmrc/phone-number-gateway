@@ -211,7 +211,8 @@
               }
             },
             "reason": {
-              "type": "string"
+              "type": "string",
+              "examples": ["Attribute +447911123456 is in the database. The vertex id is 26052, data is included."]
             }
           },
           "required": [
