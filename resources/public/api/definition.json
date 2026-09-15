@@ -10,9 +10,7 @@
       {
         "version": "1.0",
         "status": "BETA",
-        "access": {
-          "type": "PRIVATE"
-        },
+        "access": "INTERNAL",
         "endpointsEnabled": true
       }
     ]
